@@ -1,0 +1,41 @@
+{% extends 'base.html.tmpl' %}
+
+{% block head %}
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+<h1 id='title'>Archives</h1>
+
+<div id='archives'>
+<ul class='years'>
+{% for year, posts in posts|groupby('year')|reverse %}
+    <li>
+    <div>{{ year }}</div>
+    <ul class='months'>
+{% for month, posts in posts|groupby('month')|reverse %}
+        <li>
+        <div>{{ posts[0].date.strftime('%B') }}</div>
+        <ul class='days'>
+{% for day, posts in posts|groupby('day')|reverse %}
+            <li>
+            <div>{{ day }}</div>
+            <ul class='posts'>
+{% for post in posts %}
+                <li><a href='{{ post.url() }}'>{{ post.title|e|decode }}</a></li>
+{% endfor %}
+            </ul>
+{% endfor %}
+        </ul>
+{% endfor %}
+    </ul>
+{% endfor %}
+</ul>
+</div>
+
+<p>&nbsp;</p>
+
+{% endblock %}
+
+{% block archives %}{% endblock %}
+{# vim:set ft=htmljinja sw=4 ts=4 et: #}

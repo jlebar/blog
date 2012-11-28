@@ -1,0 +1,26 @@
+** On an m1.large:
+
+|make -f client.mk| (debug) from scratch:
+real	21m24.412s
+user	24m21.470s
+sys	3m14.300s
+
+|make -j4| in objdir (nothing changed):
+real	0m44.792s
+user	0m25.650s
+sys	0m11.250s
+
+** On my VM:
+
+|make -f client.mk| (debug) from scratch:
+real	54m9.233s
+user	58m8.582s
+sys	22m54.186s
+
+|make -j4| in objdir (nothing changed):
+real	3m1.719s
+user	1m18.509s
+sys	1m30.154s
+
+** Setting up SSH:
+	http://mat.ellis.name/2009/01/using-ssh-with-ec2/

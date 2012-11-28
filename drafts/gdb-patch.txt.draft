@@ -1,0 +1,21 @@
+title: Skipping uninteresting functions in GDB
+date: 2010-06-16
+uuid: urn:uuid:dbc86c4c-7998-11df-a6b2-080027dc38f9
+
+For [CS343][] last quarter, I wrote a GDB patch which lets you specify files or functions to be skipped while single-stepping.  If you're a Mozilla developer, you can tell gdb never to step into `nsCOMPtr.h`, which is quite nice.
+
+Usage is pretty simple.  For instance:
+
+    (gdb) blacklist file nsCOMPtr.h
+
+    (gdb) blacklist function nsDocShell::InternalLoad
+
+If you run `blacklist file` without any arguments, we'll blacklist the current file (just as `break` sets a breakpoint at the current line); similarly, `blacklist function` without any arguments blacklists the current function.
+
+Running `help blacklist` will show you all the blacklist commands.
+
+I'm not sure when we'll be able to get this integrated into the gdb mainline, but if you're itching for this feature, you can spin a custom build of gdb with [the patch][].  Drop me a line (or leave a comment) if you can't get it to work.
+
+[CS343]: http://stanford.edu/class/cs343
+[the patch]: http://sourceware.org/bugzilla/show_bug.cgi?id=8287
+

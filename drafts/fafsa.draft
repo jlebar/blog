@@ -1,0 +1,116 @@
+title: Replacing Bash
+date: 2011-01-07
+uuid: urn:uuid:fee82c84-1a8e-11e0-9269-0018de222ef2
+
+XXX need to check various UAs.
+
+To whom it may concern,
+
+My fiancee is currently applying for financial aid at the Columbia
+University Graduate School of Architecture, Planning, and
+Preservation.  She's had some difficulty logging in to the system due
+to the restrictions the FAFSA site places on browsers used to access
+the site.
+
+As you can read at the [error page][] which greeted my fiancee, the
+FAFSA only grants access to users using a limited number of browsers
+and operating systems.  Browsers / operating system combinations not
+on the whitelist are not granted access to the FAFSA.
+
+As a developer of the Firefox web browser, I'm writing to express my
+disappointment with these restrictions.  They're not only
+anachronistic and short-sighted, but they're poorly implemented in the
+case of the FAFSA site.  These limits are especially inappropriate
+given FAFSA's role as a primary source of aid to American students.
+
+User-agent whitelisting is an ineffective way to ensure that users of
+your website have a good experience.  But more acutely, FAFSA's
+particular user-agent whitelist is grossly incomplete and out of date.
+
+Most glaringly, the list excludes users on the Linux operating system
+from accessing the site, regardless of which browser they use.  While
+Linux may seem like a fringe platform, it's particularly popular with
+young adults, exactly the audience which uses the FAFSA.  More
+importantly, there's a movement in the computer industry towards using
+Linux on low-cost computers  -- for instance, Google's new ChromeOS
+netbooks all run Linux.  In the coming years, FAFSA's policy of
+excluding Linux users may well become a policy of preventing the
+neediest young Americans from applying for financial aid.
+
+I don't have a Mac to test on, but if the list is to be believed, Mac
+OS users on the newest version of the operating system, version 10.6,
+are also completely excluded from accessing the FAFSA, regardless of
+what web browser they might try to use.  This version of the Mac
+operating system has been out since June of 2009.  A college student
+who bought a Mac in the past year and a half would have to find
+another computer in order to view the FAFSA.  Macintosh notebooks
+represent a large fraction of computers bought by college-bound
+students.  This restriction is beyond unacceptable.
+
+According to the documentation, FAFSA only supports Google Chrome
+version 6.0 on Mac OS, Windows XP and Vista, and versions 6 and 7 on
+Windows 7.  The current version of Chrome is 8.0, and all Chrome users
+are automatically updated to the newest version.  There's no easy way
+to opt out of this update, so this policy effectively bans all Chrome
+users from the FAFSA.  It would be funny if it weren't true.
+
+Finally, although Opera runs on all versions of Windows, Mac OS, and
+Linux, it's only supported on Windows 7.  Again, there is no sense
+behind this.
+
+These restrictions come across as profoundly arbitrary.  I seriously
+doubt that FAFSA's engineers found that Chrome 7 exhibited bugs which
+made FAFSA unusable on Windows XP and Vista but not on Windows 7, or
+that Opera 10 worked properly on Windows 7 but not Mac OS or older
+versions of Windows, so I can't fathom how or why a reasonable person
+might have chosen these restrictions.
+
+Clearly FAFSA's whitelist has a number of nonsensical holes.  But the
+solution isn't simply to fill them.  In the fast-moving world that is
+technology today, any whitelist you create will inevitably be out of
+date as soon as it's implemented.  Google releases a new version of
+Chrome every six weeks.  A new version of Mac OS is due in a few
+months, as is a major update to Firefox.  Moreover, totally new web
+browsers are introduced with some frequency; the highest-profile of
+these are RockMelt and Flock.
+
+The only way to avoid obsolescence is not to maintain a list of
+supported web browsers and operating systems.  Web browser
+manufacturers today work hard to ensure that their browsers all behave
+the same as one another and act the same no matter which operating
+system they're run inside.  I seriously doubt that if you allowed
+Linux users of Firefox to access the FAFSA, you'd have to make any
+changes to your site.  If you did, this would likely be a very serious
+bug, and we at Mozilla would love to [hear about it][bugzilla].
+
+Ironically, the FAFSA's own error page articulates this very point.
+
+> For the past few years, every major Web browser released has been
+built around a set of open standards designated by the World Wide Web
+Consortium, a non-profit organization charged with overseeing the
+continuing development of the Web. What this means is that one piece
+of code now looks the same on every modern browser, whether it be
+Internet Explorer, Firefox, Safari, Opera, or others. The majority of
+our users are using these modern browsers, so we can present content
+which is optimized for them
+
+I'd be the last person to suggest that you should allow Netscape 4 or
+another old, non-standards-compliant browser to access the FAFSA.  You
+have my blessing as a browser developer if you want to maintain a
+blacklist of user-agents known to be incompatible with the FAFSA.  But
+it's simply not appropriate to block a user from your crucial website
+unless you know for sure that her browser won't work.  Even then, it's
+probably better to simply display a warning and allow her to choose
+whether she wants to try to use the site anyway; this puts the user in
+control of her experience.
+
+As for my fiancee, she just spoofed her user-agent using the instructions
+[here][spoof ua].  Perhaps until you fix the FAFSA, you could link to this
+site from the error page.
+
+Sincerely,
+-Justin Lebar
+
+[error page]: https://fafsa.ed.gov/FAFSA/app/errors?page=incompatibleBrowser
+[bugzilla]: http://bugzilla.mozilla.org
+[spoof ua]: http://notepad.patheticcockroach.com/1144/some-user-agents-for-your-spoofing-needs/

@@ -1,0 +1,57 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title>{% block title %}{{ title|escape|decode }}{% endblock %}
+</title>
+{% block feed %}
+<link rel="alternate" type="application/atom+xml" title="{{ title|escape|decode }} - Feed" href="{{ top_dir }}feed.atom">
+{% endblock %}
+<meta http-equiv="Content-Type" content="text/html;charset=US-ASCII">
+<meta name='generator' content='weblog'>
+<link rel="icon" type="image/png" href="{{ top_dir }}favicon.png" />
+{% block head %}
+<link href="{{ top_dir }}style.css" rel="stylesheet" type="text/css">
+{% endblock %}
+</head>
+<body>
+<div id="menu">
+<p>
+  <a href='{{ top_dir }}index.html'>Latest posts</a><br>
+  <a href='{{ top_dir }}archives.html'>Archives</a><br>
+  <a href='{{ top_dir }}feed.atom'>
+    <img class="inline-feed-icon" src="{{ top_dir }}feed-icon.png">
+      Feed
+  </a>
+</div>
+<div id="search">
+</div>
+{% block header %}
+{% endblock %}
+<div id='main'>
+{% block content %}{% endblock %}
+</div>
+{% block footer %}
+<div id='footer'>
+<p>
+<a href='{{ top_dir }}index.html' id='recents'>Latest posts</a> |
+<a href='{{ top_dir }}archives.html' id='archives'>Archives</a>
+</p>
+
+<p id='weblog-ad'>
+Published using <a href='http://henry.precheur.org/weblog/'>Weblog</a>
+</p>
+</div>
+{% endblock %}
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+  var pageTracker = _gat._getTracker("UA-12786268-1");
+  pageTracker._trackPageview();
+} catch(err) {}</script>
+</body>
+</html>
+{# vim:set ft=htmljinja: #}

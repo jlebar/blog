@@ -1,0 +1,40 @@
+title: Mercurial patience diff extension
+date: 2010-11-22
+uuid: urn:uuid:0ebcdb38-f699-11df-91d9-0015c5683ca0
+
+This weekend, I wrote a Mercurial extension which lets you create patience
+diffs.  This brings Mercurial in line with Bazzar, which uses patience diff by
+default, and Git, which has a `--patience` option on its `diff` command.
+
+You can get the extension with
+
+    $ hg clone http://hg.mozilla.org/users/jlebar_mozilla.com/hg-patience
+
+and install it by adding the following to your hgrc:
+
+    [extensions]
+    patience = path/to/patience.py
+
+    [diff]
+    patience = 1
+
+This will cause `hg diff` and `hg qref` to output patches using patience diff.
+You can also just run `hg diff --patience`.
+
+Patience diff is an alternative diff algorithm [proposed][cohen] by Bram Cohen.
+The problem is that the standard longest common subsequence (LCS) algorithm
+isn't ideal for generating human-readable diffs because it puts too much weight
+on matching unimportant lines, such as blank lines, and curly braces.
+
+Patience diff ignores lines which appear more than once in the input, so these
+unimportant lines don't get matched in the diff.  The result is often much more
+readable than a standard diff.  For instance, compare the following two diffs:
+
+
+
+The Mercurial extension is currently something of a hack.  I'd love to know how
+to make it cleaner.
+
+[cohen]: http://bramcohen.livejournal.com/73318.html
+[sherry]: http://alfedenzo.livejournal.com/170301.html
+[example]: http://kerneltrap.org/mailarchive/git/2009/1/1/4571994

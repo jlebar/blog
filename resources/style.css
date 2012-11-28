@@ -1,0 +1,154 @@
+body {
+    font-family: sans-serif;
+    font-size: 100.01%;
+    text-align: center; /* for IE 4+ */
+}
+
+div#main {
+    margin: 0 auto;
+    text-align: left; /* counter the body center */
+    width: 42em;
+    max-width: 90%;
+}
+
+h1 a, h2 a:link {
+    color: black;
+}
+
+h1#title {
+    margin-bottom: .4em;
+}
+
+p#description {
+    margin-bottom: 3em;
+}
+
+h3, h4, h5 {
+    border-bottom: solid 1px;
+}
+
+p#description, p.post-header {
+    font-size: small;
+}
+
+p, ul, ol {
+    line-height: 150%;
+}
+
+pre {
+    font-family: monospace;
+    border: gray solid 1px;
+    background-color: silver;
+    padding: 1em;
+    overflow: auto;
+    /* Don't show horizontal scroll bars in IE. */
+    overflow-y: hidden;
+    -ms-overflow-y: hidden;
+}
+
+div.post-content {
+    width: 38em;
+}
+
+a {
+    text-decoration: none;
+    border-bottom: 1px dotted;
+}
+
+a:hover {
+    border-bottom: 1px solid;
+}
+
+img {
+    display: block;
+    margin: 0 auto;
+    border: solid black 1px;
+}
+
+hr {
+  margin: 2em 0 2em 0;
+  background-color: black;
+  height: 1px;
+  border: 0px;
+}
+
+div#menu, div#search {
+    float: right;
+    margin-right: 1em;
+    text-align: right;
+}
+
+div#menu {
+}
+
+img.inline-feed-icon {
+    display: inline;
+    border: none;
+}
+
+div#search {
+}
+
+div#post-footer {
+    text-align: center;
+    margin-top: 2em;
+}
+
+div#post-footer div#post-footer-content {
+    margin-bottom: 1em;
+}
+
+div#post-footer hr {
+    margin: 0 0 2em 0;
+}
+
+#disqus_thread h3 {
+    border: none;
+    margin-bottom: .2em;
+}
+
+div#archives ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+div#archives ul.months, div#archives ul.days, div#archives ul.posts {
+    margin-top: -2em;
+}
+
+div#archives div {
+    height: 2em;
+    font-weight: bold;
+    text-align: right;
+}
+
+div#archives ul.years div {
+    width: 4em;
+}
+
+div#archives ul.months {
+    margin-left: 4em;
+    padding: 0;
+}
+
+div#archives ul.months div {
+    width: 7em;
+}
+
+div#archives ul.days {
+    margin-left: 7em;
+}
+
+div#archives ul.days div {
+    width: 2em;
+}
+
+div#archives ul.posts {
+    margin-left: 2em;
+}
+
+div#archives ul.posts li {
+    margin-bottom: 0.5em;
+    margin-left: 1em;
+}
