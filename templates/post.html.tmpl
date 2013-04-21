@@ -1,7 +1,12 @@
 {% extends 'base.html.tmpl' %}
 
 {% block content %}
-<h1>{{ title|escape|decode }}</h1>
+<h1 id='title'><a href='{{ top_dir }}index.html'>{{ blog_title|escape|decode }}</a></h1>
+{% if description %}
+<p id='description'>{{ description|escape|decode }}</p>
+{% endif %}
+
+<h2>{{ title|escape|decode }}</h2>
 <p class='post-header'>
 <span class='date'>
 {{ date.strftime('%A, %B %d, %Y') }}

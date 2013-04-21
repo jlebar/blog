@@ -5,7 +5,12 @@
 {% endblock %}
 
 {% block content %}
-<h1 id='title'>Archives</h1>
+<h1 id='title'><a href='index.html'>{{ title|escape|decode }}</a></h1>
+{% if description %}
+<p id='description'>{{ description|escape|decode }}</p>
+{% endif %}
+
+<h2 id='title'>Archives</h2>
 
 <div id='archives'>
 <ul class='years'>

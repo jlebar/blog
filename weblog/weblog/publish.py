@@ -63,7 +63,8 @@ def generate_post_html(post_list, output_dir, post_tmpl, config):
                            content=html_full_url(top_dir,
                                                  post.get_html()),
                            top_dir=top_dir,
-                           uuid=post.uuid))
+                           uuid=post.uuid,
+                           blog_title=config['title']))
         _write_file(os.path.join(output_dir, post.filename()),
                     config.get('encoding'),
                     post_tmpl.render(**params))
