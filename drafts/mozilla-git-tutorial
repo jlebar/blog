@@ -1,0 +1,189 @@
+Title: Git for Mozilla hackers
+
+A growing number of Firefox hackers use git as our primary source control system.  When combined with the [tools we've written for interfacing between git and hg][], I've become convinced that git offers many advantages compared to hg for hacking on Firefox.
+
+But even if you prefer Mercurial, you may no longer be able to avoid git at Mozilla.  If you're hacking on [Gaia][], [Shumway][], [Jetpack][], [Rust][], [Servo][], [BrowserID^WPersona][Persona], you're hacking with git.  So perhaps it's time to learn.
+
+There are a lot of [good][git-tutorial-1] [git][git-tutorial-2] [tutorials][git-tutorial-3] out there, but I thought it would be helpful to write one from the perspective of a user familiar with Mercurial (and how we use it at Mozilla) transitioning to using git.  So that's what this post is.
+
+A note before we get started: I'm not a git apologist.  Compared to hg, git is harder to learn, and its man pages are much worse.  You'll probably need to write or acquire some custom commands before git works smoothly for you.  But once you get used to git, I think there's no turning back.
+
+# First steps
+
+First, clone mozilla-central and move into the directory.
+
+    $ git clone git://github.com/mozilla/mozilla-central.git
+    $ cd mozilla-central
+
+This will take a while and use a few gb of space.  The good news is, you're cloning the full CVS + hg history of mozilla central, for all branches.
+
+To pull the latest changes from this repository, run
+
+    $ git fetch
+
+Like `hg pull`, `git fetch` doesn't modify your local working copy.  (In contrast, `git pull` does update your working copy, but it's tricky to use correctly, so I suggest avoiding `git pull` for now.)  We'll talk about how to update your working copy without using git pull below.
+
+# Your first commit
+
+There are a variety of workflows you might adopt when using git to hack on mozilla-central.  
+The one I prefer uses one local branch for each set of related patches.  This is similar to using multiple hg patch queues (e.g. via hg qqueue).
+
+First, we create and check out a branch for your new "patch queue"
+
+   $ git branch git-tutorial
+   $ git checkout git-tutorial
+
+(An alias for these two commands is `git checkout -b git-tutorial`.)
+
+Now let's edit a file, create a new one, look at the resulting diff, and commit those changes to our branch.
+
+   $ echo "Hello, world!" >> README.txt
+   $ echo "New file" > new-file
+   $ git add -N new-file
+   $ git status
+   $ git diff
+   $ git commit -a
+
+This is basically what you'd do in hg.  The main difference are the -N and -a parameters.  These parameters let us ignore git's *index*, a powerful but complex feature.  If you like, you can use git with a more hg-like workflow by always passing -N to git add and -a to git commit.
+
+We've now created a new commit on our new branch.  You can look at it with `git log`, or `git log --patch`.
+
+# Rebasing your commit
+
+Now suppose some time has passed and you want to update your branch so that it sits atop the latest change in mozilla-central.  (This is roughly equivalent to `hg qpop -a && hg pull -u && hg qpush -a`.) Rebasing your changes is pretty simple in git, and as we'll see, it's *much* safer.
+
+First, check that you're on the right branch:
+
+   $ git branch
+     master
+   * git-tutorial
+   [...]
+
+The "*" indicates which branch is currently checked out.  You can check it out if necessary with `git checkout git-tutorial`.
+
+Next, fetch the latest changes and rebase your branch.
+
+   $ git show HEAD^            # What's the parent of our commit?
+   $ git fetch origin          # Equivalently, git fetch; origin is the default
+   $ git rebase origin/master
+   $ git show HEAD^            # The parent of our commit should have changed.
+
+Easy as pie.
+
+## Oh #$@!, I screwed up the rebase.
+
+Suppose you screwed up the rebase somehow.  If you were using hg and didn't notice that you messed up until after you qref'ed, there's little hope; if you weren't versioning your patch queue, the old versions of your patches are gone.  But not so in git!  We can easily revert our branch to its pre-rebase state.
+
+    $ git reflog
+    # Find the hash of the pre-rebase commit
+    $ git reset --hard <hash>
+
+What did we just do, and why did this work?
+
+In git, a commit can exist even if it's not pointed to by a branch name.  Old orphaned commits get cleaned up occasionally, but it's difficult (sometimes annoyingly so) to delete them on demand.
+
+When we rebased our branch, we created a new commit atop tip of m-c, and then we modified the git-tutorial pointer so that it pointed at the new commit.  But crucially, this process does not delete the old commit.  It's still there, floating around.  `git reflog` helps you find it, and `git reset --hard` moves the branch pointer back to the old commit.
+
+This is a key concept of git, and if you grok it, everything else about git will seem simple: **A local branch is merely a pointer to a commit which exist whether or not a branch points to it.**  If a commit isn't referenced by any branches, it's not (yet) gone; it's just harder to find.
+
+As an exercise for the reader: If you decide that you didn't actually screw up the rebase, can you undo the `git reset --hard` above?
+
+== Remote branches and detached heads ==
+
+Right now, your clone is pointed at the tip of mozilla-central.  But the repository we cloned contains other branches, too:  
+
+    $ git branch --remote
+    origin/aurora
+    origin/beta
+    origin/fx-team
+    [...]
+
+Let's check out mozilla-inbound:
+
+    $ git checkout origin/inbound
+
+Depending on what version of git you're using, you may get a message like the following
+
+    Note: moving to "origin/inbound" which isn't a local branch
+    If you want to create a new branch from this checkout, you may do so
+    (now or later) by using -b with the checkout command again. Example:
+      git checkout -b <new_branch_name>
+    HEAD is now at b8d0c8e... Bug 875332 - add cgdb to the known debuggers list; r=jmaher
+
+What the heck?  To understand why this matters, we need to understand the two different types of branches, which are quite different from one another.  This distinction and its implications is probably the most important quirk of git to grok.
+
+There are two kinds of branches in git: remote branches and local branches.  Remote branches are named "remote-server/branch-name", while local branches can have whatever name you want.
+
+It may be helpful to think of a remote branch not as a branch at all, but instead as a tag that gets updated whenever the remote gets a new commit.  The only way you can modify a remote branch is by fetching from the remote or pushing new commits to the remote.  In contrast, fetching/pushing to/from a remote repository doesn't ever change your local branches.
+
+This bears repeating: **When you run `git fetch`, git fetches new changesets from the server and then updates your copy of each of your copies the server's remote branch to point to its newest commit.**  In contrast, git fetch and git push don't touch your local branches.
+
+Okay, but what does this have to do with the mysterious message above?
+
+We asked git to check out a *remote* branch, origin/inbound.  It's happy to do this, but afterwards, any new commits you make locally cannot modify the remote branch, because the only thing that can modify a remote branch is a git fetch/push.
+
+So if you do make a new commit after checking out origin/inbound, what happens to it?  The answer is, not much.  Unlike hg, git is happy to have commits sitting around which don't correspond to any branch.  They just exist in the ether until you point a local branch at them.
+
+We'll get to the commands for this in a moment, but there's an important symmetry to note here.  A remote branch is a tag which points at a commit.  It gets updated when you do git fetch or git push.  Similarly, *a local branch is also just a tag that points at a commit.*  The main difference is that the commands you use to change the commit that a local branch points to are different from the commands you use to change the commit that a remote branch points to.
+
+By default `git fetch` will fetch changes from the repository you originally cloned (which has the alias "origin", by default).  But we can add an additional remote server and fetch changes from there, too.
+
+    $ git remote add jlebar https://github.com/jlebar/mozilla-central
+    $ git remote -v
+      jlebar    git://github.com/jlebar/mozilla-central.git (fetch)
+      jlebar    git://github.com/jlebar/mozilla-central.git (push)
+      origin	git://github.com/mozilla/mozilla-central.git (fetch)
+      origin	git://github.com/mozilla/mozilla-central.git (push)
+    $ git fetch jlebar
+    $ git branch --remote
+      origin/aurora
+      [...]
+      jlebar/master
+      [...]
+
+A common git idiom is to set up local branches which "track" remote branches.  When you ran `git clone`, it set up one such local tracking branch.  Let's investigate:
+
+    $ git branch  # shows only local branches
+    master
+    $ git checkout master  # check out local master branch
+    $ git status
+    # On branch master
+    nothing to commit (working directory clean)
+
+Your local master branch tracks the remote origin/master branch, which tracks mozilla-central.  Unfortunately git doesn't give you an easy way to see this out of the box.  But if you install [moz-git-tools][], the `git tracks` command will show you:
+
+    $ git tracks
+    origin/master
+
+Suppose someone checks in to m-c.  If we run `git fetch`, origin/master will now point to this new commit.  But we still need to update our local master branch to include the new change.  Since we don't have any commits in master which aren't in origin/master, we can update our local branch using a "fast-foward merge", which means we just change master to point to the same rev origin/master now points to.
+
+    $ git fetch
+    $ git checkout master
+
+    # Show commits in origin/master but not in master
+    $ git log master..origin/master
+    [...]
+
+    $ git merge --ff-only origin/master
+    $ git log master..origin/master
+    # (No output, because now master == origin/master.)
+
+== Working on a new patch ==
+
+There's more than one way to skin this cat, but the workflow I'll describe here uses one git branch per set of patches which depend on one another.  (To be precise, we use one git branch per connected component in the patch dependency DAG.)  Those patches may or may not be spread out among multiple bugs.
+
+== XXX ==
+
+"origin" in "origin/aurora" above is an alias for the repository you originally cloned from.  You can have additional 
+
+
+[Gaia]: https://github.com/mozilla-b2g/gaia
+[Jetpack]: https://github.com/mozilla/addon-sdk
+[Shumway]: https://github.com/mozilla/shumway
+[Rust]: https://github.com/mozilla/rust
+[Servo]: https://github.com/mozilla/servo
+[Persona]: https://github.com/mozilla/browserid
+
+[git-tutorial-1]: http://git-scm.com/book
+[git-tutorial-2]: http://gitimmersion.com/lab_01.html
+[git-tutorial-3]: http://www-cs-students.stanford.edu/~blynn/gitmagic/ch02.html
