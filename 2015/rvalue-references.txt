@@ -1,0 +1,99 @@
+title: A Gentle Introduction to Rvalue References
+date: 2015-07-13 08:00
+uuid: urn:uuid:ACF27684-B1CD-47A1-8C0D-C45653EBF905
+
+## Motivation
+
+Rvalue references have three main uses:
+
+ * Letting us avoid unnecessary copies,
+ * Letting us move objects which can't be copied (canonically,
+   `std::unique_ptr`), and
+ * Perfect forwarding.
+
+We'll talk about just the first two in this post; perfect forwarding is mostly
+useful to library writers.  For the moment, let's focus on the first one,
+avoiding copies, and see how C++11 can help.
+
+Consider the following possible definition of std::vector<int>'s members:
+
+  class vector<int> {
+    int size;
+    int capacity;
+    int* elems;
+  };
+
+Now suppose we do:
+
+  vector<int> GetVector() { ... }
+
+  std::map<int, vector<int>> m;
+  m[42] = GetVector();
+
+Before C++11, here's what would happen:
+
+ 1. Return the vector from `GetVector`.  This may or may not require us to copy
+    it, depending on whether we can perform [return value optimization (RVO)][RVO].
+    In any case, let's call the returned object `x`.
+ 2. Because 42 is not in the map, we'll default-construct a second vector, `y`,
+    in the map.
+ 3. m[42] returns a reference to `y`, so now we run `y = x`, which invokes
+    `y`'s copy-constructor, `vector<int>::operator=(const vector<int>&)`.
+    This malloc's new memory in `y` and copies `x`'s elements in there.
+ 4. Finally we destroy the temporary `x`, freeing its memory.
+
+Now, the malloc + copy in step 3 is pretty silly.  We know that `x` is going
+away, so it's wasteful to malloc `y.elems` and memcopy from `x.elems` into
+`y.elems` when we could instead steal `x`'s pointer into `y` with something
+like:
+
+  y.elems = x.elems;
+  x.elems = nullptr;
+
+So long as `vector`'s destructor can handle a null `elems`, that's it, we're
+done, constant time.
+
+It's also pretty silly that we don't know in step 1 whether or not returning
+the vector requires a copy.  Even if `GetVector` can't benefit from RVO, we
+could apply the same pointer-stealing trick to avoid an expensive malloc + copy
++ free.
+
+This is a general problem in C++ when dealing with objects which own
+heap-allocated memory, and it has motivated plenty of unnatural idioms, such as
+return-by-outparam.  C++11 largely fixes this for us: **In C++11, the above
+code doesn't make any copies.**
+
+This is an impressive achivement by the C++ standards committee: Without any
+changes to your code, your program magically gets faster.  But the cost of this
+magic is a fair bit of complexity, and that's what we're going to explore in
+the rest of this post.  As we wade through the morass, keep this use-case in
+mind.
+
+RVO: http://en.cppreference.com/w/cpp/language/copy_elision
+
+## Mantras
+
+Before we dig into the new semantics introduced in C++11, I want to offer two
+non-obvious statements of fact about rvalue references.  I haven't defined or
+even introduced most of these terms yet, but let them serve as questions: If
+you understand these deep within your soul by the end of the post, you'll know
+enough to start using rvalue references effectively.
+
+### Mantra 1
+
+*An rvalue reference is a reference  
+to a temporary.*
+
+The newline here is significant; you could end this mantra at the first line.
+An rvalue reference is a reference, and for the most part it behaves just like
+a vanilla reference.  What's different about an rvalue reference is that we
+know that the thing it's pointing to is a temporary.
+
+### Mantra 2
+
+*`std::move` is a cast
+that lets us treat something as though it were a temporary.*
+
+Again the newline is significant.  People get confused by `std::move` because
+"move" is a verb, and it sounds like it's doing something.  But in reality
+`std::move` is just a cast, and does nothing by itself.
