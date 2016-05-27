@@ -1,4 +1,20 @@
-# Relatively painless rvalue references
+# A Practical Introduction to C++11 Rvalue References
+
+rvalue references are one of the most powerful new features in C++11.  But
+they're also, in my experience from teaching classes at work and reviewing code,
+one of the most difficult to grok.
+
+I've come to think this isn't so much because rvalue references are particularly
+complex (by C++'s standards, anyway).  Rather, much of the difficulty seems to
+stem from the fact that much of their workings have no syntax attached.  If you
+don't know the implicit rules, rvalue references just look like magic.
+
+In this post, I'm going to try to motivate and explain rvalue references using
+practical examples.  My hope is that this will demystify both how they work, and
+why they were designed this way.
+
+*Note to language lawyers:* I'm intentionally playing fast and loose with some
+parts of the standard here.  "Practical" is the key word in the title.  :)
 
 ## A Troubling Inefficiency
 
@@ -48,10 +64,12 @@ avoid calling `malloc`, `free`, and `memcpy` entirely, for a big potential
 speedup.  (In fact our new algorithm would be *asymptotically* faster, at O(1)
 instead of O(n).)
 
+Let's first look at how we'd solve this inefficiency without C++11.
+
 ## Stack Hack
 
-You want to let users of your class get this faster behavior, so you write a
-new member function.
+We want to let users of our class get this faster behavior, so before C++11, we
+might write a new member function.
 
     void push_front_destructive(T& t) {
       Node* n = new Node();
@@ -67,7 +85,7 @@ calls `std::swap`.)
 
 This is great, it runs in O(1) time, and steals the pointer just like we want.
 
-Now you try to use it like you did originally.
+Now we try to use our stack like we did originally.
 
     stack<string> s;
     s.push_front_destructive(get_string());  // ERROR
@@ -93,32 +111,36 @@ sufficient model to say that something is a temporary if you can only use it
 once.  So for example, `get_string()` is a temporary, because you can do
 `get_string().c_str()` or `get_string().length()` or whatever, but after you do
 that one thing, you can't go back to the original object and do a second thing.
-In constrast, if I have a `string x;`, that's not a temporary because I can
+In contrast, if I have a `string x;`, that's not a temporary because I can
 touch `x` multiple times.)
 
-This is sort of the best we can do without C++11.  It's not awful, but there
-are a few things that could be improved.  For one thing, having to name the
+This is sort of the best we can do without C++11.  It's not awful, but there are
+a few things that could be improved.  For one thing, having to name the
 temporary is ugly.  In addition, we have to remember to call
 `push_front_destructive` rather than the regular `push_front`.
 
 But, from the perspective of the C++ language's design philosophy, the worst
 part may be that we still do unnecessary work.  It's not as much as before, but
-we have to default-construct or T before swapping into it, and we have to do
+we have to default-construct a `T` before swapping into it, and we have to do
 both sides of our swap, even though we only care about the final value of
 `n->elem`.  Both of these steps can be expensive on arbitrary objects.
 
 ## The Reference Formerly Known as &&
 
 So here's where C++11 comes in to solve our problems.  C++11 introduces a new
-reference type, called the **rvalue reference**.  It is exactly like a
-non-const reference, except it's *only* allowed to refer to temporaries.
-(Recall that a regular non-const reference can refer only to
-*non*-temporaries.)
+reference type, called the **rvalue reference**.  It is exactly like a non-const
+reference, except it's *only* allowed to refer to temporaries.  (Recall that a
+regular non-const reference can refer only to *non*-temporaries.)
+
+Again, to emphasize: An rvalue reference is basically the same as a regular
+(non-const) reference.  The only difference is in the referent: A regular
+non-const reference always points to a non-temporary, while an rvalue reference
+always points to a temporary.
 
 Using just rvalue references and nothing else new, we can add an overload of
 `push_front` that accepts only temporary objects.  This overload can
-destructively its inputs at will, because the assumption is they're going away
-anyways.
+destructively modify its inputs at will, because (the assumption is) they're
+going away anyways.
 
     void push_front(T&& t) {
       Node n = new Node();
@@ -135,7 +157,8 @@ This looks exactly like `push_front_destructive`, because **rvalue references
 behave exactly like regular references**.  The only difference is that we know
 an rvalue reference refers to a temporary.
 
-With this new overload, we can now write code like the following.
+With this new overload, we can now write code that uses our stack like the
+following.
 
     stack<string> s;
     s.push_front(get_string());  // Swaps
@@ -144,18 +167,19 @@ With this new overload, we can now write code like the following.
 
 We now have two overloads of `push_front`: A version which takes a const
 reference (which can bind to a temporary or a non-temporary) and doesn't modify
-its input, and a version which takes an rvalue reference (which can only bind
-to a temporary) and `swap`s its input.  The first call to `push_front` passes a
+its input, and a version which takes an rvalue reference (which can only bind to
+a temporary) and `swap`s its input.  The first call to `push_front` passes a
 temporary, so it can bind to either overload.  We pick the rvalue ref one,
 because it's more specific.  The second call to `push_front` passes a
 non-temporary, so it can only bind to our original function, which copies.
 
 ## std::move
 
-Suppose you wanted to call the new rvalue ref overload for the second call to
-`push_front` above, because you don't care about the value of `str` after
-`push_front` completes.  C++11 adds a mechanism for you to do this:
-`std::move`.  It looks like this.
+Consider again the most recent use of our stack class above.  Suppose you wanted
+to change it so we call the new rvalue ref overload for the second call to
+`push_front`, because you don't care about the value of `str` after `push_front`
+completes.  C++11 adds a mechanism for you to do this: `std::move`.  It looks
+like this.
 
     string str = ...;
     s.push_front(std::move(str));  // Swaps
@@ -166,13 +190,14 @@ something.  But in fact it's just a cast, just like `const_cast` or
 `reinterpret_cast`.  Like those casts, `std::move` just lets you use an object
 in a different way; on its own, it doesn't do anything.
 
-We've now solved some of our problems.  We no longer have to name our
-temporaries and remember to call `push_front_destructive` when we want the
-faster behavior.  This is great!  But our new implementation of `push_front`
-still isn't as efficient as it could be.  We're still default-constructing our
-`T`, and we're still `swap`'ing, even though we only care about one side.  The
-solution?  We'll apply this same technique of overloading functions that take
-const references, but this time to constructors.
+Now that we have rvalue references and `std::move`, we've solved some of the
+problems with our original `push_front_destructive`.  We no longer have to name
+our temporaries and remember to call `push_front_destructive` when we're passing
+a temporary in order to get the faster behavior.  This is great!  But our new
+overload of `push_front` still isn't as efficient as it could be.  We're still
+default-constructing a `T`, and we're still `swap`'ing, even though we only care
+about one side.  The solution?  We'll apply this same technique of overloading
+functions that take const references, but this time to constructors.
 
 ## A Movable Constructor
 
@@ -185,11 +210,11 @@ its argument by rvalue reference.  It might look like this.
       string(const string& other);  // Copy constructor, exists pre C++11
 
       string(string&& other) {      // Move constructor, new in C++11
-       length = other.length;
-       capacity = other.capacity;
-       data = other.data;
-       other.data = nullptr;
-     }
+        length = other.length;
+        capacity = other.capacity;
+        data = other.data;
+        other.data = nullptr;
+      }
 
      private:
       size_t length;
@@ -221,16 +246,17 @@ library has been updated to have move constructors where appropriate.
 The addition of move constructors is a particularly cool change to the standard
 library.  The first line above could have been written pre-C++11, and it would
 have resulted in an O(n) copy.  But now, just by compiling your code with
-`-std=c++11`, it's an O(1) move instead!  This is impressive for a
-backwards-compatible language change.
+`-std=c++11`, it's an O(1) move instead!  Getting asymptotic speedups in your
+code is is impressive for a backwards-compatible language change.
 
 In what you're probably noticing is a pattern, this same trick can be applied
 to the assignment operator, `operator=`.  Here's what that looks like:
 
     class string {
      public:
-      string& operator=(const string& other); // Copy assignment operator
-      string& operator=(string&& other) {     // Move assignment operator
+      string& operator=(const string& other); // Copy assn operator, pre C++11
+
+      string& operator=(string&& other) {     // Move assn operator, new in C++11
         length = other.length;
         capacity = other.capacity;
         delete data;  // OK even if data is null
@@ -248,25 +274,27 @@ to the assignment operator, `operator=`.  Here's what that looks like:
 Just like the pre-C++11 compiler would try to auto-generate a copy constructor
 and copy assignment operator for you, the C++11 compiler will try to
 auto-generate a move constructor and move assignment operator for you.  The
-[rules][move constructor] for when you get one of these are complicated, but
-the main one is that if you define a custom copy constructor, the compiler
-won't auto-generate a move constructor or move assignment operator for you.
-You can use `=default` if you want to override this behavior, and you can use
-`=delete` if you want to explicitly prevent the compiler from auto-generating
-one of these functions.
+[rules][move constructor] for when you get one of these are complicated, but the
+main one is that if you define a custom copy constructor, the compiler won't
+auto-generate a move constructor or move assignment operator for you.  You can
+use `=default` if you want to override this behavior, and you can use `=delete`
+if you want to explicitly prevent the compiler from auto-generating one of these
+functions.
 
-In most general-purpose code, you're going to interact with rvalue references
-pretty much exclusively via move constructors and move operators.  Functions
-like `push_front` that take rvalue references are relatively rare, and mainly
-used in collections, wrapper classes, and for [perfect forwarding][] in
-functions that wrap constructors, such as `std::make_shared`.
+In most general-purpose code, you're likely going to interact with rvalue
+references pretty much exclusively via move constructors and move operators.
+Non-constructor functions like `push_front` that take rvalue references are
+relatively rare, and mainly used in collections, wrapper classes, and for
+[perfect forwarding][] in functions that wrap constructors, such as
+`std::make_shared`.
 
 After all that explanation, I can finally show you how using move constructors
 solves the remaining problems in our `push_front` implementation.
 
-## Back to push_front
+## Back to push\_front
 
-So let's come back to our `push_front` implementation.  To remind you, we currently have
+So let's come back to our `push_front` implementation.  To remind you, we
+currently have
 
     void push_front(T&& t) {
       Node* n = new Node();
@@ -298,14 +326,14 @@ that rvalue references are just like regular references; the only thing that's
 different is that we know the referent is a temporary.  In particular, `t`
 itself is *not* a temporary!
 
-(This is weird, I know, but it actually would be weirder the other way, because
-then if we did something like
+This is weird, I know, but it actually would be weirder the other way, because
+in that parallel universe, if we did something like
 
     n->next = t;
     t.foo();
 
 `t.foo()` would be operating on a moved-from object, but it would be very hard
-to notice this from the code.  Requiring std::move makes the fact that `t` has
+to notice this from the code.  Requiring `std::move` makes the fact that `t` has
 been moved from explicit.
 
 An interesting consequence of this can be seen in the following code.
@@ -315,11 +343,11 @@ An interesting consequence of this can be seen in the following code.
 
     foo("bar");
 
-This is *not* infinite recursion, because `s` is not a temporary!)
+This is *not* infinite recursion in C++11, because `s` is not a temporary!  An
+rvalue reference merely *points to* a temporary; it is not a temporary itself.
 
-Okay, we have (1).  What about (2)?  To avoid default-initializing
-`Node::elem`, we need to define and call a constructor on `Node` that moves
-`t`.
+Okay, we have (1).  What about (2)?  To avoid default-initializing `Node::elem`,
+we need to define and call a constructor on `Node` that moves `t`.
 
     struct Node {
       Node(T t, Node* next) : elem(std::move(t)), next(next) {}
@@ -331,28 +359,29 @@ Okay, we have (1).  What about (2)?  To avoid default-initializing
       first = new Node(std::move(t), first);
     }
 
-This still isn't perfect, as we actually move-construct a new `T` twice: Once
-inside `push_front` when we call the `Node` constructor, and again within the
-`Node` constructor, whereas the aggregate-initialization version only
-move-constructs one T.  In general this isn't a big deal, and the compiler can
-likely optimize it away.  But if you really cared, you could modify Node's
-constructor to take a `T&&`.
+This still isn't perfect, as we actually move-construct a `T` twice: Once inside
+`push_front` when we call the `Node` constructor, and again within the `Node`
+constructor, whereas the aggregate-initialization version only move-constructs
+one T.  In general this isn't a big deal, and the compiler can likely optimize
+it away.  But if you really cared, you could modify Node's constructor to take a
+`T&&`.
 
-(You couldn't avoid writing this constructor by using [aggregate
+(You couldn't avoid writing this constructor on `Node` by using [aggregate
 initialization][], as that always copies its elements.  I have no idea why that
 choice was made.)
 
 And that's it, we're done!  Easy, right?  :)
 
-## std::unique_ptr
+## std::unique\_ptr
 
 Well, we're not quite done.  No discussion of rvalue references would be
 complete without talking about `std::unique_ptr`.  `unique_ptr` is a move-only
 class: You can't copy one (because then the pointer it wraps would not be
-"unique").
+"unique").  We say `unique_ptr` "owns" a pointer, because when the `unique_ptr`
+goes away, it `delete`s its pointer.
 
-An idiom you'll probably encounter with `unique_ptr` (and other classes, not
-restricted to move-only classes) is passing `unique_ptr` by value to indicate a
+An idiom you'll probably encounter with `unique_ptr` (and other classes, even
+ones that are not move-only) is passing `unique_ptr` by value to indicate a
 transfer of ownership.
 
   void foo(unique_ptr<Bar> bar);
@@ -361,14 +390,24 @@ transfer of ownership.
   foo(std::move(my_bar));
 
 Here we give `foo` our copy of `my_bar`.  `foo` now has the only owning copy,
-and can do whatever it wants with it (e.g. store it somewhere).
+and can do whatever it wants with it (e.g. store it in a global variable
+somewhere).
 
-A common question I get is, if `std::move` isn't where we move `my_bar`, where
-the heck does the move *happen*?  My model is as follows.  Before we start
+Your first question here might be, what's the value of `my_bar` after we call
+`foo`?  The answer depends on what `unique_ptr`'s move constructor does!
+Hypothetically, it could do basically anything.  It could leave `my_bar` in a
+state such that you get undefined behavior if you call any functions on it.
+
+According to the spec, a `unique_ptr` is null after it's moved from.
+`std::string` is in a "valid, but unspecified state", meaning, you can safely
+call functions on the string, but who knows what you'll get.
+
+Another common question I get is, if `std::move` isn't where we move `my_bar`,
+where the heck does the move *happen*?  My model is as follows.  Before we start
 running `foo`, we execute a function prelude, which sets up the arguments.  In
 particular, for each parameter P in `foo`'s declaration, we construct a new P
-inside the scope of our call to foo, using the argument passed to the call.  So
-in this case it's as though `foo` executes `unique_ptr<Bar>
+inside the scope of our call to `foo`, using the argument passed to the call.
+So in this case it's as though `foo` executes `unique_ptr<Bar>
 bar(std::move(my_bar))` in its prelude.  *This* is where the move occurs.
 
 Something similar happens when you return a value: In the function epilogue, we
@@ -386,15 +425,7 @@ do still need `std::move` if you're doing something like `return
 std::move(foo.bar)` -- only arguments and local variables, not their members,
 are implicitly treated as temporaries in return statements.
 
-Another question I get is, what's the value of a class after it's moved from?
-The answer is, it depends on what the move constructor does!  If you know
-nothing about the class, all you can assume is that you can safely run the
-destructor on the moved-from object.  But other classes may have more strict
-contracts.  For example, a moved-from `unique_ptr` is always null, and a
-moved-from `std::string` is in a "valid but unspecified state", meaning that
-you won't crash if you touch the string, but aside from that, who knows.
-
-### unique_ptr idioms
+### unique\_ptr idioms
 
 `unique_ptr` is awesome because it lets you avoid a lot of bugs, and it lets
 you make any class efficiently movable.  And in fact since most of your code
@@ -403,8 +434,9 @@ leaks and use-after-free bugs, I'd say that `unique_ptr` is actually more
 important than all this avoiding-copies business we've been talking about.  But
 `unique_ptr` is *so* convenient, I sometimes see people using it everywhere,
 even when a plain value type would do.  I call this the "[I can write Java in
-any programming language][fortran]" antipattern.  For example, instead of
-writing
+any programming language][fortran]" antipattern.
+
+For example, instead of writing
 
   void foo(unique_ptr<vector<unique_ptr<Bar>>> v);
 
@@ -436,13 +468,13 @@ Once you know about move constructors, it can be easy to tie yourself into
 knots while trying to avoid all unnecessary copies.  Some people even try to
 avoid unnecessary moves.  I'd say, hakuna matata, try not to worry about it.
 Premature optimization is the root of all evil; just write clean code and
-profile it if you care.  It's been my experience that the rvalue rules make the
-natural thing pretty good, anyway.
+profile it if you care.  It's been my experience that the rvalue rules often
+make the code you'd naturally pretty good, anyway.
 
 If you want a more rigorous take on this material, I recommend [Thomas
 Beckner's article][beckner].  In particular, he covers perfect forwarding and
 reference collapsing, which is useful for library classes.  Beckner also has a
-good [article][beckner-auto] on `auto` and `decltype`.
+good [article][beckner-auto] on `auto` and `decltype`, if you're interested.
 
 http://cppreference.com is also your friend.  It's dense, but it has all the
 rules, and I've found learning to read that stuff to be well worth the effort.
