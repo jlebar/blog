@@ -63,8 +63,7 @@ This is frustratingly inefficient.  You and I know that the string returned by
 do we need to `malloc` a new buffer and `free` the old buffer, when we could
 simply steal the old buffer for our own purposes?  This would let `push_front`
 avoid calling `malloc`, `free`, and `memcpy` entirely, for a big potential
-speedup.  (In fact our new algorithm would be *asymptotically* faster, at O(1)
-instead of O(n).)
+speedup.
 
 Let's first look at how we'd solve this inefficiency without C++11.
 
