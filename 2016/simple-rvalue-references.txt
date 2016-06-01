@@ -458,6 +458,21 @@ of mean to your callers.
 
 # Parting words
 
+If you remember nothing else, remember the following two rules.  They are enough
+to recover most of the content of this post.
+
+  1. **An rvalue reference is a reference <br>
+  to a temporary.**
+
+  2. **`std::move` is a cast <br>
+  that lets you treat its argument as a temporary.**
+
+The linebreaks here are significant: You can stop reading each of the rules
+after the first line.  Rvalue references are just like normal non-const
+references (except they always point to temporaries, which regular non-const
+references never do).  `std::move` is a cast, so does nothing by itself; it just
+lets you treat something as a temporary.
+
 Once you know about move constructors, it can be easy to tie yourself into
 knots while trying to avoid all unnecessary copies.  Some people even try to
 avoid unnecessary moves.  I'd say, hakuna matata, try not to worry about it.
@@ -470,7 +485,7 @@ article][beckner].  In particular, he covers perfect forwarding and reference
 collapsing, which are useful for library classes.  Beckner also has a good
 [article][beckner-auto] on `auto` and `decltype`, if you're interested.
 
-http://cppreference.com is also your friend.  It's dense, but it has all the
+<http://cppreference.com> is also your friend.  It's dense, but it has all the
 rules, and I've found learning to read that stuff to be well worth the effort.
 
 Good luck, and happy coding!
