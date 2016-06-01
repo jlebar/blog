@@ -456,6 +456,28 @@ is *actually* stored in a `unique_ptr` somewhere.  But maybe it's stored on the
 stack, or maybe it's in a raw pointer for some reason.  The former form is kind
 of mean to your callers.
 
+One last antipattern: Instead of writing
+
+    void foo(unique_ptr<T>&& ptr);
+
+consider simply
+
+    void foo(unique_ptr<T> ptr);
+
+Because unique_ptr<T> is move-only, these are basically the same from the
+perspective of a caller.  (*Why?*)  The main difference is that, if you
+`std::move` the argument to the second `foo`, you *know* that the value
+afterwards is null.  Whereas with the first one, the value after `foo` completes
+could be anything.  I prefer the second form because its behavior is more
+predictable.
+
+You can extend this argument to types which are both movable and copyable; e.g.
+if you're writing a function which needs to take ownership of a string, prefer
+`foo(string s)` to `foo(string&& s)`.  Both let you avoid a copy if you're
+passing a temporary, but the former is a more flexible API, as it will happily
+make a copy of a non-temporary.  Of course, if you really want to *prevent*
+copying, maybe taking the arg by rvalue ref is for you.
+
 # Parting words
 
 If you remember nothing else, remember the following two rules.  They are enough
