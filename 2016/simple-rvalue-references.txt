@@ -155,9 +155,8 @@ going away anyways.
 (An rvalue reference is spelled `&&`.  The double-ampersand is a single unit;
 don't try to read it as "reference-to-a-reference".)
 
-This looks exactly like `push_front_destructive`, because **rvalue references
-behave exactly like regular references**.  The only difference is that we know
-an rvalue reference refers to a temporary.
+The body of our new function is exactly the same as `push_front_destructive`,
+because **rvalue references behave exactly like regular references**.
 
 With this new overload, we can now write code that uses our stack like the
 following.
@@ -194,12 +193,13 @@ in a different way; on its own, it doesn't do anything.
 
 Now that we have rvalue references and `std::move`, we've solved some of the
 problems with our original `push_front_destructive`.  We no longer have to name
-our temporaries and remember to call `push_front_destructive` when we're passing
-a temporary in order to get the faster behavior.  This is great!  But our new
-overload of `push_front` still isn't as efficient as it could be.  We're still
-default-constructing a `T`, and we're still `swap`'ing, even though we only care
-about one side.  The solution?  We'll apply this same technique of overloading
-functions that take const references, but this time to constructors.
+our temporaries and remember to call `push_front_destructive` in order to get
+the faster behavior.  This is great!  But our new overload of `push_front` still
+isn't as efficient as it could be.  We're still default-constructing a `T`, and
+we're still `swap`'ing, even though we only care about one side.
+
+The solution?  We'll apply this same technique of overloading functions that
+take const references, but this time to constructors.
 
 # A Movable Constructor
 
@@ -363,14 +363,13 @@ we need to define and call a constructor on `Node` that moves `t`.
 
 This still isn't perfect, as we actually move-construct a `T` twice: Once inside
 `push_front` when we call the `Node` constructor, and again within the `Node`
-constructor, whereas the aggregate-initialization version only move-constructs
-one T.  In general this isn't a big deal, and the compiler can likely optimize
-it away.  But if you really cared, you could modify Node's constructor to take a
-`T&&`.
+constructor.  In general this isn't a big deal, and the compiler can likely
+optimize it away.  But if you really cared, you could modify Node's constructor
+to take a `T&&`.
 
-(You couldn't avoid writing this constructor on `Node` by using [aggregate
-initialization][], as that always copies its elements.  I have no idea why that
-choice was made.)
+(You couldn't avoid writing this constructor on `Node` by using
+[aggregate initialization][], as that always copies its elements.  I have no
+idea why that choice was made.)
 
 And that's it, we're done!  Easy, right?  :)
 
