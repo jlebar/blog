@@ -341,7 +341,8 @@ weird, I know, but it would be weirder if it were the other way around.
 (Exactly why is left as an exercise to the reader.)
 
 Okay, we have (1).  What about (2)?  To avoid default-initializing `Node::elem`,
-we need to define and call a constructor on `Node` that moves `t`.
+we need to define and call a constructor on `Node` that moves `t`.  It might
+look like this.
 
     struct Node {
       Node(T t, Node* next) : elem(std::move(t)), next(next) {}
@@ -357,7 +358,7 @@ This still isn't perfect, as we actually move-construct a `T` twice: Once inside
 `push_front` when we call the `Node` constructor, and again within the `Node`
 constructor.  In general this isn't a big deal, and the compiler can likely
 optimize it away.  But if you really cared, you could modify Node's constructor
-to take a `T&&`.
+to take a `T&&`.  You would still need the `std::move`!
 
 (You couldn't avoid writing this constructor on `Node` by using
 [aggregate initialization][], as that always copies its elements.  I have no
@@ -391,22 +392,23 @@ Your first question here might be, what's the value of `my_bar` after we call
 Hypothetically, it could do basically anything.  It could leave `my_bar` in a
 state such that you get undefined behavior if you call any functions on it.
 
+Some classes are more constrained in their behavior after being moved from.
 According to the spec, a `unique_ptr` is null after it's moved from.
 `std::string` is in a "valid, but unspecified state", meaning, you can safely
 call functions on the string, but who knows what you'll get.
 
 Another common question I get is, if `std::move` isn't where we move `my_bar`,
 where the heck does the move *happen*?  My model is as follows.  Before we start
-running `foo`, we execute a function prelude, which sets up the arguments.  In
-particular, for each parameter P in `foo`'s declaration, we construct a new P
+running `foo`, we execute a function prelude, which sets up `foo`'s arguments.
+In particular, for each parameter P in `foo`'s declaration, we construct a new P
 inside the scope of our call to `foo`, using the argument passed to the call.
 So in this case it's as though `foo` executes `unique_ptr<Bar>
 bar(std::move(my_bar))` in its prelude.  *This* is where the move occurs.
 
 Something similar happens when you return a value: In the function epilogue, we
 construct a new value in the calling scope using the value you're returning.
-There's a wrinkle with C++11, however, which is that when you `return foo`,
-`foo` is implicitly a temporary, if it's a local variable or function argument.
+There's a wrinkle with C++11, however, which is that when you `return foo`, if
+`foo` is a local variable or function argument, it is implicitly a temporary.
 You don't need to `return std::move(foo)` to get efficient move construction of
 the return value.
 
@@ -420,14 +422,14 @@ are implicitly treated as temporaries in return statements.
 
 ## unique\_ptr idioms
 
-`unique_ptr` is awesome because it lets you avoid a lot of bugs, and it lets
-you make any class efficiently movable.  And in fact since most of your code
-isn't performance-sensitive, but presumably all of it is sensitive to memory
-leaks and use-after-free bugs, I'd say that `unique_ptr` is actually more
-important than all this avoiding-copies business we've been talking about.  But
-`unique_ptr` is *so* convenient, I sometimes see people using it everywhere,
-even when a plain value type would do.  I call this the "[I can write Java in
-any programming language][fortran]" antipattern.
+`unique_ptr` is awesome because it lets you avoid a lot of bugs, and it lets you
+make any class efficiently movable.  And in fact since most of your code isn't
+performance-sensitive, but presumably all of it is sensitive to memory leaks and
+use-after-free bugs, I'd say that `unique_ptr` is actually more important than
+all this avoiding-copies stuff we've been talking about.  But `unique_ptr` is
+*so* convenient, I sometimes see people using it everywhere, even when a plain
+value type would do.  I call this the "[I can write Java in any programming
+language][fortran]" antipattern.
 
 For example, instead of writing
 
@@ -450,8 +452,8 @@ why not write
 
     void foo(const Bar* bar);
 
-The former is annoying because you can only call your function if the data is
-*actually* stored in a `unique_ptr` somewhere.  But maybe it's stored on the
+The former is annoying because someone can only call your function if the data
+is *actually* stored in a `unique_ptr` somewhere.  But maybe it's stored on the
 stack, or maybe it's in a raw pointer for some reason.  The former form is kind
 of mean to your callers.
 
@@ -462,12 +464,12 @@ knots while trying to avoid all unnecessary copies.  Some people even try to
 avoid unnecessary moves.  I'd say, hakuna matata, try not to worry about it.
 Premature optimization is the root of all evil; just write clean code and
 profile it if you care.  It's been my experience that the rvalue rules often
-make the code you'd naturally pretty good, anyway.
+make the code you'd naturally write pretty fast, anyway.
 
-If you want a more rigorous take on this material, I recommend [Thomas
-Beckner's article][beckner].  In particular, he covers perfect forwarding and
-reference collapsing, which is useful for library classes.  Beckner also has a
-good [article][beckner-auto] on `auto` and `decltype`, if you're interested.
+If you want a more rigorous take on this material, I recommend [Thomas Beckner's
+article][beckner].  In particular, he covers perfect forwarding and reference
+collapsing, which are useful for library classes.  Beckner also has a good
+[article][beckner-auto] on `auto` and `decltype`, if you're interested.
 
 http://cppreference.com is also your friend.  It's dense, but it has all the
 rules, and I've found learning to read that stuff to be well worth the effort.
