@@ -328,25 +328,17 @@ that rvalue references are just like regular references; the only thing that's
 different is that we know the referent is a temporary.  In particular, `t`
 itself is *not* a temporary!
 
-This is weird, I know, but it actually would be weirder the other way, because
-in that parallel universe, if we did something like
-
-    n->next = t;
-    t.foo();
-
-`t.foo()` would be operating on a moved-from object, but it would be very hard
-to notice this from the code.  Requiring `std::move` makes the fact that `t` has
-been moved from explicit.
-
-An interesting consequence of this can be seen in the following code.
+A surprising consequence of this can be seen in the following code.
 
     void foo(const string&) {}
     void foo(string&& s) { foo(s); }
 
     foo("bar");
 
-This is *not* infinite recursion in C++11, because `s` is not a temporary!  An
-rvalue reference merely *points to* a temporary; it is not a temporary itself.
+This is *not* infinite recursion, because `s` is not a temporary!  An rvalue
+reference merely *points to* a temporary; it is not a temporary itself.  This is
+weird, I know, but it would be weirder if it were the other way around.
+(Exactly why is left as an exercise to the reader.)
 
 Okay, we have (1).  What about (2)?  To avoid default-initializing `Node::elem`,
 we need to define and call a constructor on `Node` that moves `t`.
