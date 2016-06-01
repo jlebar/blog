@@ -490,6 +490,8 @@ rules, and I've found learning to read that stuff to be well worth the effort.
 
 Good luck, and happy coding!
 
+*Thanks to Andrew Hunter for many improvements to this post.*
+
 [ADL]: http://en.cppreference.com/w/cpp/language/adl
 [Stroustrup]: http://www.stroustrup.com/C++11FAQ.html#rval
 [cpp-values]: http://en.cppreference.com/w/cpp/language/value_category
