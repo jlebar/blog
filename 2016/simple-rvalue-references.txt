@@ -386,10 +386,10 @@ An idiom you'll probably encounter with `unique_ptr` (and other classes, even
 ones that are not move-only) is passing `unique_ptr` by value to indicate a
 transfer of ownership.
 
-  void foo(unique_ptr<Bar> bar);
+    void foo(unique_ptr<Bar> bar);
 
-  unique_ptr<Bar> my_bar;
-  foo(std::move(my_bar));
+    unique_ptr<Bar> my_bar;
+    foo(std::move(my_bar));
 
 Here we give `foo` our copy of `my_bar`.  `foo` now has the only owning copy,
 and can do whatever it wants with it (e.g. store it in a global variable
@@ -440,11 +440,11 @@ any programming language][fortran]" antipattern.
 
 For example, instead of writing
 
-  void foo(unique_ptr<vector<unique_ptr<Bar>>> v);
+    void foo(unique_ptr<vector<unique_ptr<Bar>>> v);
 
 why not just write
 
-  void foo(vector<unique_ptr<Bar>> v);
+    void foo(vector<unique_ptr<Bar>> v);
 
 ?  `vector` is already efficiently movable, and in fact `vector<unique_ptr<T>>`
 is not copyable (because a vector is not copyable if its elements are not
