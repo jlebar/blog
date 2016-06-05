@@ -416,8 +416,8 @@ prevents [RVO][].  If your type is efficiently movable, this probably isn't a
 big deal.  But if your type is *not* movable, then you end up with a full-blown
 copy!  clang 3.7's `-Wpessimizing-move` will warn you about this footgun.  You
 do still need `std::move` if you're doing something like `return
-std::move(foo.bar)` -- only arguments and local variables, not their members,
-are implicitly treated as temporaries in return statements.
+std::move(foo.bar)` &ndash; only arguments and local variables, not their
+members, are implicitly treated as temporaries in return statements.
 
 ## unique\_ptr idioms
 
