@@ -175,10 +175,10 @@ non-temporary, so it can only bind to our original function, which copies.
 
 # std::move
 
-Consider again the most recent use of our stack class above.  Suppose you wanted
-to change it so we call the new rvalue ref overload for the second call to
-`push_front`, because you don't care about the value of `str` after `push_front`
-completes.  C++11 adds a mechanism for you to do this: `std::move`.  It looks
+Consider again the most recent use of our stack class above.  Suppose we wanted
+to change it so we invoke the new rvalue ref overload for the second call to
+`push_front`, because we don't care about the value of `str` after `push_front`
+completes.  C++11 adds a mechanism for us to do this: `std::move`.  It looks
 like this.
 
     string str = ...;
@@ -187,7 +187,7 @@ like this.
 **All `std::move` does is imbue its argument with temporaryness.**  I know,
 it's confusing, because "move" is a verb; it sounds like it should *do*
 something.  But in fact it's just a cast, just like `const_cast` or
-`reinterpret_cast`.  Like those casts, `std::move` just lets you use an object
+`reinterpret_cast`.  Like those casts, `std::move` just lets us use an object
 in a different way; on its own, it doesn't do anything.
 
 Now that we have rvalue references and `std::move`, we've solved some of the
