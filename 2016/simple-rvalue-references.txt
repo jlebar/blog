@@ -23,7 +23,7 @@ parts of the standard here.  "Practical" is the key word in the title.  :)
 Imagine you're writing a simple stack class, based on a singly-linked list.
 
     template<typename T>
-    class stack {
+    class Stack {
      private:
       struct Node {
         T elem;
@@ -45,7 +45,7 @@ Imagine you're writing a simple stack class, based on a singly-linked list.
 
 Now suppose you use your class as follows.
 
-    stack<string> s;
+    Stack<string> s;
     s.push_front(get_string());
 
 Let's break down what this does:
@@ -88,7 +88,7 @@ This is great, it runs in O(1) time, and steals the pointer just like we want.
 
 Now we try to use our stack like we did originally.
 
-    stack<string> s;
+    Stack<string> s;
     s.push_front_destructive(get_string());  // ERROR
 
 But this is a compile error!  The problem is that C++ does not let you bind a
@@ -99,12 +99,12 @@ gets in our way here.
 
 We can still make this work, but it's a bit ugly:
 
-    stack<string> s;
+    Stack<string> s;
     string tmp = get_string();
-    s.push_front_destructive(s);
+    s.push_front_destructive(tmp);
 
 This is OK because now we're asking the the non-const reference arg in
-`push_front_destructive` to bind to the non-temporary `s`.
+`push_front_destructive` to bind to the non-temporary `tmp`.
 
 (You may have noticed that I haven't defined what a "temporary" actually is.
 The exact [definition][cpp-values] is...complicated.  For our purposes, it's a
@@ -112,7 +112,7 @@ sufficient model to say that something is a temporary if you can only use it
 once.  So for example, `get_string()` is a temporary, because you can do
 `get_string().c_str()` or `get_string().length()` or whatever, but after you do
 that one thing, you can't go back to the original object and do a second thing.
-In contrast, if I have a `string x;`, that's not a temporary because I can
+In contrast, if I have a `string x`, that's not a temporary because I can
 touch `x` multiple times.)
 
 This is sort of the best we can do without C++11.  It's not awful, but there are
@@ -160,7 +160,7 @@ because **rvalue references behave exactly like regular references**.
 With this new overload, we can now write code that uses our stack like the
 following.
 
-    stack<string> s;
+    Stack<string> s;
     s.push_front(get_string());  // Swaps
     string str = ...;
     s.push_front(str);           // Copies
