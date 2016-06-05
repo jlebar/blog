@@ -1,5 +1,7 @@
+@import url(https://fonts.googleapis.com/css?family=Droid+Sans+Mono|Droid+Sans:400,700);
+
 body {
-    font-family: sans-serif;
+    font-family: "Droid Sans", sans-serif;
     font-size: 100.01%;
     text-align: center; /* for IE 4+ */
 }
@@ -36,14 +38,20 @@ p, ul, ol {
 }
 
 pre {
-    font-family: monospace;
+    font-family: "Droid Sans Mono", monospace;
+    font-size: .90em;
     border: gray solid 1px;
-    background-color: silver;
+    background-color: #E5E4E2;
     padding: 1em;
     overflow: auto;
     /* Don't show horizontal scroll bars in IE. */
     overflow-y: hidden;
     -ms-overflow-y: hidden;
+}
+
+code {
+    font-family: "Droid Sans Mono", monospace;
+    font-size: .90em;
 }
 
 div.post-content {
