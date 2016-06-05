@@ -38,8 +38,6 @@ p, ul, ol {
 }
 
 pre {
-    font-family: "Droid Sans Mono", monospace;
-    font-size: .90em;
     border: gray solid 1px;
     background-color: #E5E4E2;
     padding: 1em;
@@ -52,6 +50,10 @@ pre {
 code {
     font-family: "Droid Sans Mono", monospace;
     font-size: .90em;
+}
+
+p > code {
+    white-space: nowrap;
 }
 
 div.post-content {
