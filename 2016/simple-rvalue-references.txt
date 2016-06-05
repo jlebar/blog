@@ -245,10 +245,10 @@ string&` arg happily binds to temporaries.  But everything in the C++ standard
 library has been updated to have move constructors where appropriate.
 
 The addition of move constructors is a particularly cool change to the standard
-library.  The first line above could have been written pre-C++11, and it would
-have resulted in an O(n) copy.  But now, just by compiling your code with
-`-std=c++11`, it's an O(1) move instead!  Getting asymptotic speedups in your
-code is is impressive for a backwards-compatible language change.
+library.  The line `string a(get_string());` could have been written pre-C++11,
+and it would have resulted in an O(n) copy.  But now, just by compiling our
+code with `-std=c++11`, it's an O(1) move instead!  Getting asymptotic speedups
+in your code is is impressive for a backwards-compatible language change.
 
 In what you're probably noticing is a pattern, this same trick can be applied
 to the assignment operator, `operator=`.  Here's what that looks like:
