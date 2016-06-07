@@ -100,11 +100,11 @@ gets in our way here.
 We can still make this work, but it's a bit ugly:
 
     Stack<string> s;
-    string tmp = get_string();
-    s.push_front_destructive(tmp);
+    string str = get_string();
+    s.push_front_destructive(str);
 
 This is OK because now we're asking the the non-const reference arg in
-`push_front_destructive` to bind to the non-temporary `tmp`.
+`push_front_destructive` to bind to the non-temporary `str`.
 
 (You may have noticed that I haven't defined what a "temporary" actually is.
 The exact [definition][cpp-values] is...complicated.  For our purposes, it's a
@@ -115,16 +115,16 @@ that one thing, you can't go back to the original object and do a second thing.
 In contrast, if I have a `string x`, that's not a temporary because I can
 touch `x` multiple times.)
 
-This is sort of the best we can do without C++11.  It's not awful, but there are
-a few things that could be improved.  For one thing, having to name the
-temporary is ugly.  In addition, we have to remember to call
-`push_front_destructive` rather than the regular `push_front`.
+This is sort of the best we can do without C++11.  It's not awful, but there
+are a few things that could be improved.  For one thing, having to assign
+`get_string` into a named variable is ugly.  In addition, we have to remember
+to call `push_front_destructive` rather than the regular `push_front`.
 
-But, from the perspective of the C++ language's design philosophy, the worst
-part may be that we still do unnecessary work.  It's not as much as before, but
-we have to default-construct a `T` before swapping into it, and we have to do
-both sides of our swap, even though we only care about the final value of
-`n->elem`.  Both of these steps can be expensive on arbitrary objects.
+But from the perspective of C++'s design philosophy, the worst part may be that
+we still do unnecessary work.  It's not as much as before, but we have to
+default-construct a `T` before swapping into it, and we have to do both sides
+of our swap, even though we only care about the final value of `n->elem`.  Both
+of these steps can be expensive on arbitrary objects.
 
 # The Reference Formerly Known as &&
 
@@ -169,8 +169,8 @@ We now have two overloads of `push_front`: A version which takes a const
 reference (which can bind to a temporary or a non-temporary) and doesn't modify
 its input, and a version which takes an rvalue reference (which can only bind to
 a temporary) and `swap`s its input.  The first call to `push_front` passes a
-temporary, so it can bind to either overload.  We pick the rvalue ref one,
-because it's more specific.  The second call to `push_front` passes a
+temporary, so it can bind to either overload.  The compiler picks the rvalue
+ref one, because it's more specific.  The second call to `push_front` passes a
 non-temporary, so it can only bind to our original function, which copies.
 
 # std::move
@@ -390,6 +390,7 @@ Your first question here might be, what's the value of `my_bar` after we call
 `foo`?  The answer depends on what `unique_ptr`'s move constructor does!
 Hypothetically, it could do basically anything.  It could leave `my_bar` in a
 state such that you get undefined behavior if you call any functions on it.
+The only requirement is that we can safely run `my_bar`'s destructor.
 
 Some classes are more constrained in their behavior after being moved from.
 According to the spec, a `unique_ptr` is null after it's moved from.
@@ -401,8 +402,14 @@ where the heck does the move *happen*?  My model is as follows.  Before we start
 running `foo`, we execute a function prelude, which sets up `foo`'s arguments.
 In particular, for each parameter P in `foo`'s declaration, we construct a new P
 inside the scope of our call to `foo`, using the argument passed to the call.
-So in this case it's as though `foo` executes `unique_ptr<Bar>
-bar(std::move(my_bar))` in its prelude.  *This* is where the move occurs.
+
+So in the case above, where `foo` takes a `unique_ptr<Bar> bar` parameter by
+value and we do `foo(std::move(my_bar))`, it's as though `foo` executes
+`unique_ptr<Bar> bar(std::move(my_bar))` in its prelude.  *This* is where the
+move occurs.  (Note that if `foo` took its parameter by, say, rvalue reference,
+then the same call to `foo` would result in us doing `unique_ptr<Bar>&&
+bar(std::move(my_bar))` in the prelude, which is just binding a reference; it's
+not a copy or a move.)
 
 Something similar happens when you return a value: In the function epilogue, we
 construct a new value in the calling scope using the value you're returning.
@@ -411,13 +418,14 @@ There's a wrinkle with C++11, however, which is that when you `return foo`, if
 You don't need to `return std::move(foo)` to get efficient move construction of
 the return value.
 
-In fact you *don't want* to `return std::move(foo)`, because (hilariously) that
+In fact, you *don't want* to `return std::move(foo)`, because (hilariously) that
 prevents [RVO][].  If your type is efficiently movable, this probably isn't a
 big deal.  But if your type is *not* movable, then you end up with a full-blown
-copy!  clang 3.7's `-Wpessimizing-move` will warn you about this footgun.  You
-do still need `std::move` if you're doing something like `return
-std::move(foo.bar)` &ndash; only arguments and local variables, not their
-members, are implicitly treated as temporaries in return statements.
+copy! (RVO would have elided this copy, making it free.) clang 3.7's
+`-Wpessimizing-move` will warn you about this footgun.  You do still need
+`std::move` if you're doing something like `return std::move(foo.bar)` &ndash;
+only arguments and local variables, not their members, are implicitly treated
+as temporaries in return statements.
 
 ## unique\_ptr idioms
 
@@ -464,12 +472,12 @@ consider simply
 
     void foo(unique_ptr<T> ptr);
 
-Because unique_ptr<T> is move-only, these are basically the same from the
+Because unique_ptr<T> is move-only, these are almost the same from the
 perspective of a caller.  (*Why?*)  The main difference is that, if you
 `std::move` the argument to the second `foo`, you *know* that the value
-afterwards is null.  Whereas with the first one, the value after `foo` completes
-could be anything.  I prefer the second form because its behavior is more
-predictable.
+afterwards is null.  Whereas with the first one, the value after `foo`
+completes could be anything.  I prefer the second form because its behavior is
+more predictable.
 
 You can extend this argument to types which are both movable and copyable; e.g.
 if you're writing a function which needs to take ownership of a string, prefer
@@ -483,11 +491,11 @@ copying, maybe taking the arg by rvalue ref is for you.
 If you remember nothing else, remember the following two rules.  They are enough
 to recover most of the content of this post.
 
-  1. **An rvalue reference is a reference <br>
-  to a temporary.**
+  1. An rvalue reference is a reference <br>
+  to a temporary.
 
-  2. **`std::move` is a cast <br>
-  that lets you treat its argument as a temporary.**
+  2. `std::move` is a cast <br>
+  that lets you treat its argument as a temporary.
 
 The linebreaks here are significant: You can stop reading each of the rules
 after the first line.  Rvalue references are just like normal non-const
@@ -512,7 +520,7 @@ rules, and I've found learning to read that stuff to be well worth the effort.
 
 Good luck, and happy coding!
 
-*Thanks to Andrew Hunter for many improvements to this post.*
+*Thanks to Andrew Hunter and Kyle Huey for many improvements to this post.*
 
 [ADL]: http://en.cppreference.com/w/cpp/language/adl
 [Stroustrup]: http://www.stroustrup.com/C++11FAQ.html#rval
