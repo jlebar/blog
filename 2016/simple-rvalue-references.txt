@@ -316,7 +316,7 @@ Our goals are
 
     void push_front(T&& t) {
       Node* n = new Node();
-      n->next = std::move(t);
+      n->elem = std::move(t);
       n->next = first;
       first = n;
     }
