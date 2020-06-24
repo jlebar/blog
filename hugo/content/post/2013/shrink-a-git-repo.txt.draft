@@ -1,6 +1,6 @@
 title: Easily deleting unwanted blobs in a git repo
-date: 2013-05-09 2:00
-uuid: urn:uuid:d4133164-b86d-11e2-a9c5-782bcb9cb190
+date: 2013-05-09
+uuid:
 
 Git is (rightly so) conservative about deleting your data.  Git will hang on to a commit's data even after you've "erased" it via git reset or git rebase, just in case you want to get it back later.
 

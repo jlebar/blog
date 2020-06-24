@@ -1,6 +1,6 @@
 ---
 title: Custom telemetry dashboards
-date: 2012-06-04 20:30
+date: 2012-06-04
 uuid: urn:uuid:19d79934-aea5-11e1-925a-782bcb9cb190
 ---
 

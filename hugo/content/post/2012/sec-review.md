@@ -1,6 +1,6 @@
 ---
 title: Security Review Form Helper
-date: 2012-04-27 13:00
+date: 2012-04-27
 uuid: urn:uuid:d542fdde-9088-11e1-9283-782bcb9cb190
 ---
 

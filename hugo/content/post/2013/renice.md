@@ -1,6 +1,6 @@
 ---
 title: Beware of renice
-date: 2013-04-11 20:20
+date: 2013-04-11
 uuid: urn:uuid:e20952ee-a305-11e2-ad4c-782bcb9cb190
 ---
 

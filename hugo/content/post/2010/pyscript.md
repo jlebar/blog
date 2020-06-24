@@ -1,6 +1,6 @@
 ---
 title: Replacing Bash
-date: 2010-02-01 19:12
+date: 2010-02-01
 uuid: urn:uuid:7baf959e-1078-11df-a948-08002769b3d1
 ---
 

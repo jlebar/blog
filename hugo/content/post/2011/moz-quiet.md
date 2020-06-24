@@ -1,6 +1,6 @@
 ---
 title: "Use MOZ_QUIET environment variable to disable DOCSHELL/DOMWINDOW printfs."
-date: 2011-08-04 13:25
+date: 2011-08-04
 uuid: urn:uuid:83186b24-beb1-11e0-9448-782bcb9cb190
 ---
 

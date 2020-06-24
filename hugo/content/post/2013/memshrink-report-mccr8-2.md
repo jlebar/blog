@@ -1,6 +1,6 @@
 ---
 title: MemShrink process, weeks 98-102
-date: 2013-05-31 20:45
+date: 2013-05-31
 uuid: urn:uuid:f81eb5ee-ca5e-11e2-9b5a-c82a1426416b
 ---
 

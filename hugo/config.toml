@@ -15,7 +15,7 @@ pygmentsUseClasses = true
 pygmentsCodefencesGuessSyntax = true
 
 hasCJKLanguage = false     # has chinese/japanese/korean?
-paginate = 5
+paginate = 300
 disqusShortname = ""      # disqus_shortname
 googleAnalytics = ""      # UA-XXXXXXXX-X
 copyright = ""            # default: author.name ↓
@@ -63,7 +63,7 @@ copyright = ""            # default: author.name ↓
   #description = "Hugo theme even example site."
 
   # paginate of archives, tags and categories
-  archivePaginate = 5
+  archivePaginate = 500
 
   # show 'xx Posts In Total' in archive page ?
   showArchiveCount = false
@@ -89,7 +89,7 @@ copyright = ""            # default: author.name ↓
   mathjaxEnableAutoNumber = false                                                       
   mathjaxUseLocalFiles = false  # You should install mathjax in `your-site/static/lib/mathjax`
 
-  postMetaInFooter = true   # contain author, lastMod, markdown link, license           
+  postMetaInFooter = false   # contain author, lastMod, markdown link, license           
   linkToMarkDown = false    # Only effective when hugo will output .md files.           
   contentCopyright = ''     # e.g. '<a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank">CC BY-NC-ND 4.0</a>'
 

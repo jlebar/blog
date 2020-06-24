@@ -1,6 +1,8 @@
+---
 title: A Practical Introduction to C++11 Rvalue References
-date: 2016-05-28 00:00:00
+date: 2016-05-28
 uuid: urn:uuid:662a90cf-7171-404c-a70b-e507428f2e8f
+---
 
 rvalue references are one of the most powerful new features in C++11.  But
 they're also, in my experience from teaching classes at work and reviewing code,

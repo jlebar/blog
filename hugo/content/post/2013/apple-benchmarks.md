@@ -1,6 +1,6 @@
 ---
 title: Mac OS 10.9 Browser Benchmarks
-date: 2013-06-12 23:00
+date: 2013-06-12
 files: 2013/apple-benchmarks.png
 uuid: urn:uuid:1847eff0-d3d5-11e2-8d94-c82a1426416b
 ---

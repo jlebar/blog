@@ -1,6 +1,6 @@
 ---
 title: Limiting the amount of RAM a program can use
-date: 2011-06-15 18:50
+date: 2011-06-15
 uuid: urn:uuid:18b33c00-979c-11e0-be1f-782bcb9cb190
 ---
 

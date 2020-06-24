@@ -1,6 +1,6 @@
 ---
 title: "Hacking, part 1: Vim"
-date: 2010-02-01 16:55
+date: 2010-02-01
 uuid: urn:uuid:7ba6c41e-1078-11df-a948-08002769b3d1
 ---
 

@@ -1,6 +1,6 @@
 ---
 title: GNU grep is 10x faster than Mac grep
-date: 2012-11-28 00:30
+date: 2012-11-28
 uuid: urn:uuid:53d569de-391c-11e2-8a9e-c82a1426416b
 ---
 

@@ -1,7 +1,7 @@
 ---
-date: 2011-05-20 16:50
-uuid: urn:uuid:6148efe2-8319-11e0-87cd-e0f84735e6cc
 title: Faster and smaller clones of branches
+date: 2011-05-20
+uuid: urn:uuid:6148efe2-8319-11e0-87cd-e0f84735e6cc
 ---
 
 We're moving towards a world with increasingly many branches.  Pulling a full

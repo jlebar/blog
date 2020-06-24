@@ -1,6 +1,6 @@
 ---
 title: Set CCACHE_BASEDIR to share object files between trees
-date: 2011-04-19 14:00
+date: 2011-04-19
 uuid: urn:uuid:ebd366c8-6ab0-11e0-b751-e0f84735e6cc
 ---
 
