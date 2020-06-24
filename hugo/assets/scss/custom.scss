@@ -1,0 +1,12 @@
+/* Override C++ syntax rules */
+.language-cpp {
+  .token.function, .token.class-name {
+    color: #000000;
+  }
+  .token.keyword {
+    color: #283593;
+  }
+  .token.operator {
+    color: #000000;
+  }
+}
