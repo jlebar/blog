@@ -24,31 +24,35 @@ parts of the standard here.  "Practical" is the key word in the title.  :)
 
 Imagine you're writing a simple stack class, based on a singly-linked list.
 
-    template<typename T>
-    class Stack {
-     private:
-      struct Node {
-        T elem;
-        Node* next;
-      };
+```cpp
+template<typename T>
+class Stack {
+ private:
+  struct Node {
+    T elem;
+    Node* next;
+  };
 
-      Node* first;
+  Node* first;
 
-     public:
-      void push_front(const T& t) {
-        Node* n = new Node();
-        n->elem = t;
-        n->next = first;
-        first = n;
-      }
+ public:
+  void push_front(const T& t) {
+    Node* n = new Node();
+    n->elem = t;
+    n->next = first;
+    first = n;
+  }
 
-      // pop_front, constructors omitted.
-    };
+  // pop_front, constructors omitted.
+};
+```
 
 Now suppose you use your class as follows.
 
-    Stack<string> s;
-    s.push_front(get_string());
+```cpp
+Stack<string> s;
+s.push_front(get_string());
+```
 
 Let's break down what this does:
 
@@ -74,13 +78,15 @@ Let's first look at how we'd solve this inefficiency without C++11.
 We want to let users of our class get this faster behavior, so before C++11, we
 might write a new member function.
 
-    void push_front_destructive(T& t) {
-      Node* n = new Node();
-      using std::swap;
-      swap(n->elem, t);
-      n->next = first;
-      first = n;
-    }
+```cpp
+void push_front_destructive(T& t) {
+  Node* n = new Node();
+  using std::swap;
+  swap(n->elem, t);
+  n->next = first;
+  first = n;
+}
+```
 
 (This business with `using std::swap` is an [ADL][] trick; it lets us call a
 specialized version of `swap` if one exists for the type `T`, otherwise it
@@ -90,8 +96,10 @@ This is great, it runs in O(1) time, and steals the pointer just like we want.
 
 Now we try to use our stack like we did originally.
 
-    Stack<string> s;
-    s.push_front_destructive(get_string());  // ERROR
+```cpp
+Stack<string> s;
+s.push_front_destructive(get_string());  // ERROR
+```
 
 But this is a compile error!  The problem is that C++ does not let you bind a
 temporary value (`get_string()`) to a non-const reference (`t`).  One of the
@@ -101,9 +109,11 @@ gets in our way here.
 
 We can still make this work, but it's a bit ugly:
 
-    Stack<string> s;
-    string str = get_string();
-    s.push_front_destructive(str);
+```cpp
+Stack<string> s;
+string str = get_string();
+s.push_front_destructive(str);
+```
 
 This is OK because now we're asking the the non-const reference arg in
 `push_front_destructive` to bind to the non-temporary `str`.
@@ -145,13 +155,15 @@ Using just rvalue references and nothing else new, we can add an overload of
 destructively modify its inputs at will, because (the assumption is) they're
 going away anyways.
 
-    void push_front(T&& t) {
-      Node n = new Node();
-      using std::swap;
-      swap(n->elem, t);
-      n->next = first;
-      first = n;
-    }
+```cpp
+void push_front(T&& t) {
+  Node n = new Node();
+  using std::swap;
+  swap(n->elem, t);
+  n->next = first;
+  first = n;
+}
+```
 
 (An rvalue reference is spelled `&&`.  The double-ampersand is a single unit;
 don't try to read it as "reference-to-a-reference".)
@@ -162,10 +174,12 @@ because **rvalue references behave exactly like regular references**.
 With this new overload, we can now write code that uses our stack like the
 following.
 
-    Stack<string> s;
-    s.push_front(get_string());  // Swaps
-    string str = ...;
-    s.push_front(str);           // Copies
+```cpp
+Stack<string> s;
+s.push_front(get_string());  // Swaps
+string str = ...;
+s.push_front(str);           // Copies
+```
 
 We now have two overloads of `push_front`: A version which takes a const
 reference (which can bind to a temporary or a non-temporary) and doesn't modify
@@ -183,8 +197,10 @@ to change it so we invoke the new rvalue ref overload for the second call to
 completes.  C++11 adds a mechanism for us to do this: `std::move`.  It looks
 like this.
 
-    string str = ...;
-    s.push_front(std::move(str));  // Swaps
+```cpp
+string str = ...;
+s.push_front(std::move(str));  // Swaps
+```
 
 **All `std::move` does is imbue its argument with temporaryness.**  I know,
 it's confusing, because "move" is a verb; it sounds like it should *do*
@@ -208,22 +224,24 @@ Consider `std::string`.  It's always had a copy constructor, which takes its
 argument by const reference.  Suppose we added a new constructor, which takes
 its argument by rvalue reference.  It might look like this.
 
-    class string {
-     public:
-      string(const string& other);  // Copy constructor, exists pre C++11
+```cpp
+class string {
+ public:
+  string(const string& other);  // Copy constructor, exists pre C++11
 
-      string(string&& other) {      // Move constructor, new in C++11
-        length = other.length;
-        capacity = other.capacity;
-        data = other.data;
-        other.data = nullptr;
-      }
+  string(string&& other) {      // Move constructor, new in C++11
+    length = other.length;
+    capacity = other.capacity;
+    data = other.data;
+    other.data = nullptr;
+  }
 
-     private:
-      size_t length;
-      size_t capacity;
-      const char* data;
-    };
+ private:
+  size_t length;
+  size_t capacity;
+  const char* data;
+};
+```
 
 This new constructor is called a **move constructor**.  Our implementation
 takes a temporary string, steals its pointers, and copies its non-pointer
@@ -237,9 +255,11 @@ Now when we create a string, we can play the same overloading game we did with
 (which `malloc`'s a new buffer and so on), but if we pass a temporary, we call
 the move constructor.
 
-    string a(get_string());  // move constructor
-    string b(a);             // copy constructor
-    string c(std::move(b));  // move constructor
+```cpp
+string a(get_string());  // move constructor
+string b(a);             // copy constructor
+string c(std::move(b));  // move constructor
+```
 
 Note that if `string` didn't have a move constructor, the line `string
 c(std::move(b))` would just call the copy constructor, because its `const
@@ -255,24 +275,26 @@ in your code is is impressive for a backwards-compatible language change.
 In what you're probably noticing is a pattern, this same trick can be applied
 to the assignment operator, `operator=`.  Here's what that looks like:
 
-    class string {
-     public:
-      string& operator=(const string& other); // Copy assn operator, pre C++11
+```cpp
+class string {
+ public:
+  string& operator=(const string& other); // Copy assn operator, pre C++11
 
-      string& operator=(string&& other) {     // Move assn operator, new in C++11
-        length = other.length;
-        capacity = other.capacity;
-        delete data;  // OK even if data is null
-        data = other.data;
-        other.data = nullptr;
-        return *this;
-      }
-    };
+  string& operator=(string&& other) {     // Move assn operator, new in C++11
+    length = other.length;
+    capacity = other.capacity;
+    delete data;  // OK even if data is null
+    data = other.data;
+    other.data = nullptr;
+    return *this;
+  }
+};
 
-    string a, b;
-    a = get_string();  // Move assignment
-    a = b;             // Copy assignment
-    a = std::move(b);  // Move assignment
+string a, b;
+a = get_string();  // Move assignment
+a = b;             // Copy assignment
+a = std::move(b);  // Move assignment
+```
 
 Just like the pre-C++11 compiler would try to auto-generate a copy constructor
 and copy assignment operator for you, the C++11 compiler will try to
@@ -299,13 +321,15 @@ solves the remaining problems in our `push_front` implementation.
 So let's come back to our `push_front` implementation.  To remind you, we
 currently have
 
-    void push_front(T&& t) {
-      Node* n = new Node();
-      using std::swap;
-      swap(n->elem, t);
-      n->next = first;
-      first = n;
-    }
+```cpp
+void push_front(T&& t) {
+  Node* n = new Node();
+  using std::swap;
+  swap(n->elem, t);
+  n->next = first;
+  first = n;
+}
+```
 
 Our goals are 
 
@@ -316,12 +340,14 @@ Our goals are
 
 (1) is easy, we can use the move-assignment operator, as follows.
 
-    void push_front(T&& t) {
-      Node* n = new Node();
-      n->elem = std::move(t);
-      n->next = first;
-      first = n;
-    }
+```cpp
+void push_front(T&& t) {
+  Node* n = new Node();
+  n->elem = std::move(t);
+  n->next = first;
+  first = n;
+}
+```
 
 The thing to note here is that we do need the `std::move`, if we want to call
 the move assignment operator, even though `t` is an rvalue reference.  Recall
@@ -331,10 +357,12 @@ itself is *not* a temporary!
 
 A surprising consequence of this can be seen in the following code.
 
-    void foo(const string&) {}
-    void foo(string&& s) { foo(s); }
+```cpp
+void foo(const string&) {}
+void foo(string&& s) { foo(s); }
 
-    foo("bar");
+foo("bar");
+```
 
 This is *not* infinite recursion, because `s` is not a temporary!  An rvalue
 reference merely *points to* a temporary; it is not a temporary itself.  This is
@@ -345,15 +373,17 @@ Okay, we have (1).  What about (2)?  To avoid default-initializing `Node::elem`,
 we need to define and call a constructor on `Node` that moves `t`.  It might
 look like this.
 
-    struct Node {
-      Node(T t, Node* next) : elem(std::move(t)), next(next) {}
-      T elem;
-      Node* next;
-    };
+```cpp
+struct Node {
+  Node(T t, Node* next) : elem(std::move(t)), next(next) {}
+  T elem;
+  Node* next;
+};
 
-    void push_front(T&& t) {
-      first = new Node(std::move(t), first);
-    }
+void push_front(T&& t) {
+  first = new Node(std::move(t), first);
+}
+```
 
 This still isn't perfect, as we actually move-construct a `T` twice: Once inside
 `push_front` when we call the `Node` constructor, and again within the `Node`
@@ -379,10 +409,12 @@ An idiom you'll probably encounter with `unique_ptr` (and other classes, even
 ones that are not move-only) is passing `unique_ptr` by value to indicate a
 transfer of ownership.
 
-    void foo(unique_ptr<Bar> bar);
+```cpp
+void foo(unique_ptr<Bar> bar);
 
-    unique_ptr<Bar> my_bar;
-    foo(std::move(my_bar));
+unique_ptr<Bar> my_bar;
+foo(std::move(my_bar));
+```
 
 Here we give `foo` our copy of `my_bar`.  `foo` now has the only owning copy,
 and can do whatever it wants with it (e.g. store it in a global variable
@@ -442,11 +474,15 @@ language][fortran]" antipattern.
 
 For example, instead of writing
 
-    void foo(unique_ptr<vector<unique_ptr<Bar>>> v);
+```cpp
+void foo(unique_ptr<vector<unique_ptr<Bar>>> v);
+```
 
 why not just write
 
-    void foo(vector<unique_ptr<Bar>> v);
+```cpp
+void foo(vector<unique_ptr<Bar>> v);
+```
 
 ?  `vector` is already efficiently movable, and in fact `vector<unique_ptr<T>>`
 is not copyable (because a vector is not copyable if its elements are not
@@ -468,13 +504,17 @@ of mean to your callers.
 
 One last antipattern: Instead of writing
 
-    void foo(unique_ptr<T>&& ptr);
+```cpp
+void foo(unique_ptr<T>&& ptr);
+```
 
 consider simply
 
-    void foo(unique_ptr<T> ptr);
+```
+void foo(unique_ptr<T> ptr);
+```
 
-Because unique_ptr<T> is move-only, these are almost the same from the
+Because `unique_ptr<T>` is move-only, these are almost the same from the
 perspective of a caller.  (*Why?*)  The main difference is that, if you
 `std::move` the argument to the second `foo`, you *know* that the value
 afterwards is null.  Whereas with the first one, the value after `foo`

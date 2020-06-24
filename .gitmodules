@@ -1,3 +1,6 @@
 [submodule "hugo/themes/even"]
 	path = hugo/themes/even
 	url = https://github.com/olOwOlo/hugo-theme-even
+[submodule "hugo/themes/codex"]
+	path = hugo/themes/codex
+	url = https://github.com/jlebar/hugo-theme-codex.git

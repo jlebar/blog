@@ -1,7 +1,6 @@
 ---
 title: Mac OS 10.9 Browser Benchmarks
 date: 2013-06-12
-files: 2013/apple-benchmarks.png
 uuid: urn:uuid:1847eff0-d3d5-11e2-8d94-c82a1426416b
 ---
 
@@ -9,7 +8,7 @@ uuid: urn:uuid:1847eff0-d3d5-11e2-8d94-c82a1426416b
 performance of Safari, Chrome, and Firefox.  I've reproduced it below since I
 expect Apple will take the page down soon.
 
-![Apple's browser benchmark results](2013/apple-benchmarks.png)
+![Apple's browser benchmark results](apple-benchmarks.png)
 
 The data is bunk, of course.  SunSpider is a terrible benchmark, and without
 workloads specified for the memory usage and power consumption measurements,
