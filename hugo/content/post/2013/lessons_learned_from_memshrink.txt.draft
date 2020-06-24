@@ -1,0 +1,16 @@
+Title: Lessons Learned from MemShrink
+
+*What follows is a reproduction of a talk I gave at [Hacker School][] on Monday, March 5, modified somewhat for my audience here.  I spoke without slides.*
+
+MemShrink is about 18 months old, and I want to reflect here on some of the
+lessons we've learned.  I particularly want to focus on lessons you might be
+able to apply to your own projects.
+
+Looking back, we've tried to do three separate things as part of the MemShrink
+project:
+
+ 1. Eliminate the perception that Firefox is a memory hog,
+ 2. Improve Firefox's "average-case" memory consumption, and
+ 3. Improve Firefox's "extreme-case" memory consumption.
+
+We 
