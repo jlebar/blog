@@ -20,7 +20,7 @@ why they were designed this way.
 *Note to language lawyers:* I'm intentionally playing fast and loose with some
 parts of the standard here.  "Practical" is the key word in the title.  :)
 
-# A Troubling Inefficiency
+## A Troubling Inefficiency
 
 Imagine you're writing a simple stack class, based on a singly-linked list.
 
@@ -73,7 +73,7 @@ speedup.
 
 Let's first look at how we'd solve this inefficiency without C++11.
 
-# Stack Hack
+## Stack Hack
 
 We want to let users of our class get this faster behavior, so before C++11, we
 might write a new member function.
@@ -138,7 +138,7 @@ default-construct a `T` before swapping into it, and we have to do both sides
 of our swap, even though we only care about the final value of `n->elem`.  Both
 of these steps can be expensive on arbitrary objects.
 
-# The Reference Formerly Known as &&
+## The Reference Formerly Known as &&
 
 So here's where C++11 comes in to solve our problems.  C++11 introduces a new
 reference type, called the **rvalue reference**.  It is exactly like a non-const
@@ -189,7 +189,7 @@ temporary, so it can bind to either overload.  The compiler picks the rvalue
 ref one, because it's more specific.  The second call to `push_front` passes a
 non-temporary, so it can only bind to our original function, which copies.
 
-# std::move
+## std::move
 
 Consider again the most recent use of our stack class above.  Suppose we wanted
 to change it so we invoke the new rvalue ref overload for the second call to
@@ -218,7 +218,7 @@ we're still `swap`'ing, even though we only care about one side.
 The solution?  We'll apply this same technique of overloading functions that
 take const references, but this time to constructors.
 
-# A Movable Constructor
+## A Movable Constructor
 
 Consider `std::string`.  It's always had a copy constructor, which takes its
 argument by const reference.  Suppose we added a new constructor, which takes
@@ -316,7 +316,7 @@ relatively rare, and mainly used in collections, wrapper classes, and for
 After all that explanation, I can finally show you how using move constructors
 solves the remaining problems in our `push_front` implementation.
 
-# Back to push\_front
+## Back to push\_front
 
 So let's come back to our `push_front` implementation.  To remind you, we
 currently have
@@ -397,7 +397,7 @@ idea why that choice was made.)
 
 And that's it, we're done!  Easy, right?  :)
 
-# std::unique\_ptr
+## std::unique\_ptr
 
 Well, we're not quite done.  No discussion of rvalue references would be
 complete without talking about `std::unique_ptr`.  `unique_ptr` is a move-only
@@ -461,7 +461,7 @@ copy! (RVO would have elided this copy, making it free.) clang 3.7's
 only arguments and local variables, not their members, are implicitly treated
 as temporaries in return statements.
 
-## unique\_ptr idioms
+#### unique\_ptr idioms
 
 `unique_ptr` is awesome because it lets you avoid a lot of bugs, and it lets you
 make any class efficiently movable.  And in fact since most of your code isn't
@@ -528,7 +528,7 @@ passing a temporary, but the former is a more flexible API, as it will happily
 make a copy of a non-temporary.  Of course, if you really want to *prevent*
 copying, maybe taking the arg by rvalue ref is for you.
 
-# Parting words
+## Parting words
 
 If you remember nothing else, remember the following two rules.  They are enough
 to recover most of the content of this post.
