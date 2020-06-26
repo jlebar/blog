@@ -2,7 +2,6 @@
 title: A ghost story
 date: 2012-05-30
 uuid: urn:uuid:064f862a-aa71-11e1-a159-782bcb9cb190
-files: 2012/ghost-windows-plot.png
 ---
 
 Once upon a time, I wanted to add telemetry for counting the number of zombie compartments present in an instance of Firefox.
@@ -71,7 +70,7 @@ we could observe how his patches changed this measure.
 
 Here's the plot.  (This is data from Firefox nightlies on Windows.)
 
-![Telemetry evolution graph for ghost windows](2012/ghost-windows-plot.png)
+![Telemetry evolution graph for ghost windows](ghost-windows-plot.png)
 
 There are three points of interest here:
 
