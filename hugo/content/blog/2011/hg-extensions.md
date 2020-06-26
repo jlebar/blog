@@ -7,7 +7,7 @@ uuid: urn:uuid:0303107c-2039-11e0-a733-0015c5683ca0
 Since this [appears][zpao-1] [to be][zpao-2] in fashion, I thought I'd share a
 few mercurial tips of my own.
 
-# qstatus
+## qstatus
 
 I created a `hg qstatus` command by adding the following to my hgrc:
 
@@ -25,7 +25,7 @@ I often switch to a patch and then run
 
 to open all the files touched by that patch.
 
-# Indexing into your patch queue
+## Indexing into your patch queue
 
 Passing `-v` to `hg qseries` shows you which patches in your series are applied
 and gives a zero-based index for each patch in your queue.  For instance,

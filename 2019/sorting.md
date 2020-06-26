@@ -1,3 +1,9 @@
+---
+title: GNU grep is 10x faster than Mac grep
+date: 2012-11-28 00:30
+uuid: urn:uuid:53d569de-391c-11e2-8a9e-c82a1426416b
+---
+
 I want to demonstrate a beautiful connection between two problems you know well:
 sorting and binary search.  I'm sure I'm not the first person to think of this,
 but I haven't been able to find it written down anywhere.

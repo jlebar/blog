@@ -1,3 +1,8 @@
+---
+title: Why is sorting O(log(n))?
+draft: true
+---
+
 I want to demonstrate a beautiful connection between two problems you know well:
 sorting and binary search.  I'm sure I'm not the first person to think of this,
 but I haven't been able to find it written down anywhere.

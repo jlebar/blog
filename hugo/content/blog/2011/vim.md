@@ -20,7 +20,7 @@ browser distracting.  Similarly, you might be tempted to use ctags or cscope to
 accomplish these tasks.  But I often find myself searching through IDL, JS, and
 even HTML files, which ctags and cscope don't handle.)
 
-# First steps
+## First steps
 
 Suppose you want to look through the references to `nsPIDOMWindow` in IDL
 files.  You might run
@@ -44,7 +44,7 @@ background Vim to look through the output from grep, or run the command again.
 This process is pretty annoying if you want to look through 10 or so files,
 especially if you do this 10 or so times a day.  There must be a better way.
 
-# Quickfix (almost) to the rescue
+## Quickfix (almost) to the rescue
 
 Vim's [`:grep`][vimgrep] command gets us most of the way there.  `:grep` will
 invoke grep and create a "quickfix list" from the output.  We can then navigate
@@ -60,7 +60,7 @@ But to make this work, we need a way to filter by filetype.  We could use
 but on my machine, this is way too slow.  (Native grep finishes in about a
 second, but vimgrep went on for more than a minute before I killed it.)
 
-# Wrapping `:grep`
+## Wrapping `:grep`
 
 What we need is a function which wraps `:grep` but lets us invoke something
 like the first command in this post, with `find` and `grep`.  Turns out there's

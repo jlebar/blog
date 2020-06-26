@@ -11,7 +11,7 @@ clone (say of mozilla-central), you can do a lot better.
 With thanks to the Mercurial developers who
 [pointed this trick out to me][hg bug], here's how.
 
-# Pulling using an existing clone
+## Pulling using an existing clone
 
 Suppose we want to clone the cedar branch.  First, make a copy of your
 mozilla-central clone:
@@ -43,7 +43,7 @@ it works better with branches which haven't been around for too long.  For
 instance, the `hg strip` step took upwards of 20 minutes when I ran it on the
 tracemonkey branch.)
 
-# hg relink
+## hg relink
 
 If you already have two related trees and you want to share storage between
 them, just use the [relink][] command.  Enable it in your hgrc:

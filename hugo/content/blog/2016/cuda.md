@@ -4,7 +4,7 @@ draft: true
 
 CUDA is a low-level language
 
-# Hardware
+## Hardware
 
 Before I can explain the CUDA language, we need to talk about the GPU hardware.
 
