@@ -2,6 +2,8 @@
 title: "IE9 Hardware Acceleration"
 date: 2010-09-13
 uuid: urn:uuid:856bc436-bf0a-11df-8850-0026b9792740
+aliases:
+  - /2010/9/13/"IE9_Hardware_Acceleration".html
 ---
 
 Some [fuss][slashdot] has been made about Microsoft's [claims][ie9-blog] that IE9's hardware acceleration is architecturally superior to Firefox's.  Roc [says][roc] the IE team is wrong, and I believe him.

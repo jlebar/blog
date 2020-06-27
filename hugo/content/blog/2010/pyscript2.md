@@ -2,6 +2,8 @@
 title: Replacing Bash, part 2
 date: 2010-02-03
 uuid: urn:uuid:b189712a-113c-11df-a9d6-08002769b3d1
+aliases:
+  - /2010/2/3/Replacing_Bash,_part_2.html
 ---
 
 In my [last post][], I talked about why I want to replace Bash as an
@@ -46,7 +48,7 @@ instead.
 The Hotwire wiki has a long [list][similar projects] of similar projects.
 People want B'.  But I'm not sure it exists just yet.
 
-[last post]: 2010/2/1/Replacing_Bash.html
+[last post]: {{< ref pyscript.md >}}
 [rush]: http://rush.heroku.com/
 [Hotwire]: http://code.google.com/p/hotwire-shell/
 [Hotwire no loops]: http://code.google.com/p/hotwire-shell/wiki/HotwireScripting

@@ -2,6 +2,8 @@
 title: Set CCACHE_BASEDIR to share object files between trees
 date: 2011-04-19
 uuid: urn:uuid:ebd366c8-6ab0-11e0-b751-e0f84735e6cc
+aliases:
+  - /2011/4/19/Set_CCACHE_BASEDIR_to_share_object_files_between_trees.html
 ---
 
 I [wrote last year][ccache-post] that ccache 3 allows you to share object

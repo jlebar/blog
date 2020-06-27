@@ -2,6 +2,8 @@
 title: Boolean parameters to API functions considered harmful.
 date: 2011-12-16
 uuid: urn:uuid:86af85e8-2832-11e1-92fc-782bcb9cb190
+aliases:
+  - /2011/12/16/Boolean_parameters_to_API_functions_considered_harmful..html
 ---
 
 Can you spot the [bug][hive-bug] in the following code?

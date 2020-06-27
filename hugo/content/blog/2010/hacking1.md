@@ -2,6 +2,8 @@
 title: "Hacking, part 1: Vim"
 date: 2010-02-01
 uuid: urn:uuid:7ba6c41e-1078-11df-a948-08002769b3d1
+aliases:
+  - /2010/2/1/"Hacking,_part_1:_Vim".html
 ---
 
 Hello, world!  I thought it would be fitting to begin this blog by talking

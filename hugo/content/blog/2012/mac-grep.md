@@ -2,6 +2,8 @@
 title: GNU grep is 10x faster than Mac grep
 date: 2012-11-28
 uuid: urn:uuid:53d569de-391c-11e2-8a9e-c82a1426416b
+aliases:
+  - /2012/11/28/GNU_grep_is_10x_faster_than_Mac_grep.html
 ---
 
 If you're on a Mac and you ever use grep, do yourself a favor and do

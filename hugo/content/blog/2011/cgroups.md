@@ -2,6 +2,8 @@
 title: Limiting the amount of RAM a program can use
 date: 2011-06-15
 uuid: urn:uuid:18b33c00-979c-11e0-be1f-782bcb9cb190
+aliases:
+  - /2011/6/15/Limiting_the_amount_of_RAM_a_program_can_use.html
 ---
 
 Suppose we want to run Firefox but restrict it to using only 50MB of physical

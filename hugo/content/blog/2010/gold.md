@@ -2,6 +2,8 @@
 title: gold
 date: 2010-03-17
 uuid: urn:uuid:53f74dde-9d82-4a33-8c04-97672d32ac26
+aliases:
+  - /2010/3/17/gold.html
 ---
 
 Wow, [gold][], Ian Lance Taylor's replacement for the GNU linker ld, is fast.
@@ -15,7 +17,7 @@ Firefox builds a large (200mb) shared library called `libxul`, and creating this
     # With ld:
     real    5m21.202s
     user    0m40.499s
-    sys	    0m50.855s
+    sys     0m50.855s
     
     # With gold:
     real    2m8.786s

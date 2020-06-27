@@ -2,6 +2,8 @@
 title: hg tips
 date: 2011-01-14
 uuid: urn:uuid:0303107c-2039-11e0-a733-0015c5683ca0
+aliases:
+  - /2011/1/14/hg_tips.html
 ---
 
 Since this [appears][zpao-1] [to be][zpao-2] in fashion, I thought I'd share a

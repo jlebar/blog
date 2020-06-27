@@ -2,6 +2,8 @@
 title: "PSA: hg inotify extension"
 date: 2011-08-10
 uuid: urn:uuid:26ded498-c306-11e0-8fd2-782bcb9cb190
+aliases:
+  - /2011/8/10/PSA:_hg_inotify_extension.html
 ---
 
 *tl;dr &mdash; Enable the hg `inotify` extension to make hg faster.*

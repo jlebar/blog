@@ -2,6 +2,8 @@
 title: Vim search plugin
 date: 2011-03-23
 uuid: urn:uuid:5e8f9752-5564-11e0-a95b-001b24dc1e3b
+aliases:
+  - /2011/3/23/Vim_search_plugin.html
 ---
 
 *If you're just looking for the `search` plugin, you can get it

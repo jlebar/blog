@@ -2,6 +2,8 @@
 title: Skip uninteresting files and functions in gdb
 date: 2011-11-20
 uuid: urn:uuid:a555f81c-13e5-11e1-a432-782bcb9cb190
+aliases:
+  - /2011/11/20/Skip_uninteresting_files_and_functions_in_gdb.html
 ---
 
 *tl;dr - Build [gdb trunk][], then run `help skip` to be pleasantly surprised.*

@@ -2,6 +2,8 @@
 title: Git tools for Mozilla
 date: 2012-03-18
 uuid: urn:uuid:e4ca99de-7129-11e1-b394-782bcb9cb190
+aliases:
+  - /2012/3/18/Git_tools_for_Mozilla.html
 ---
 
 I've been working on a [set of git tools][git_tools] for Mozilla, and I'm

@@ -3,6 +3,8 @@ title: ccache 3.0
 date: 2010-03-21
 draft: false
 uuid: urn:uuid:f8e76924-322e-11df-b418-08002769b3d1
+aliases:
+  - /2010/3/21/ccache_3.0.html
 ---
 
 Along the same lines as my [last post][], [ccache 3.0][ccache] (pre-release,
