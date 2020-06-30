@@ -1,0 +1,59 @@
+{{ define "main" }}
+{{ $dateFormat := .Site.Params.dateFormat | default "Jan 2 2006" }}
+
+{{/* TODO: This is not accessible! */}}
+{{/* TODO: This does not work well on mobile. */}}
+<div id="archive">
+  {{ $last_year := "" }}
+  {{ $last_month := "" }}
+  {{ $last_day := "" }}
+
+  {{ range .Pages }}
+    {{ $year := .Date.Format "2006" }}
+    <div class="year">
+      {{if ne $year $last_year}}
+        {{$year}}
+
+        {{$last_year = $year}}
+        {{$last_month = ""}}
+        {{$last_day = ""}}
+      {{end}}
+    </div>
+
+    {{ $month := .Date.Format "January" }}
+    <div class="month">
+      {{if ne $month $last_month}}
+        {{$month}}
+
+        {{$last_month = $month}}
+        {{$last_day = ""}}
+      {{end}}
+    </div>
+
+    {{ $day := .Date.Format "2" }}
+    <div class="month">
+      {{if ne $day $last_day}}
+        {{$day}}
+        {{$last_day = $day}}
+      {{end}}
+    </div>
+
+    <div class="post"><a href="{{.RelPermalink}}">{{ .Title }}</a></div>
+  {{ end }}
+</div>
+
+{{/*
+  <li class="post">
+    <div class="post__header">
+      <time class="post__date" datetime="{{ .Date }}"
+        >{{ .Date.Format $dateFormat }}</time>
+      <h2 class="post__title">
+        <a href="{{.RelPermalink}}">{{ .Title }}</a>
+      </h2>
+      {{ partial "tags.html" .}}
+    </div>
+  </li>
+</ul>
+*/}}
+
+{{ end }}

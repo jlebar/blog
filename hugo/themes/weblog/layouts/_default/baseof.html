@@ -21,18 +21,6 @@
   {{ $style := resources.Get "scss/main.scss" | resources.ToCSS $scssopts | fingerprint }}
   <link rel="stylesheet" href="{{ $style.RelPermalink }}" integrity="{{ $style.Data.Integrity | safeHTMLAttr }}" />
 
-  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.2.2/anchor.min.js" integrity="sha256-E4RlfxwyJVmkkk0szw7LYJxuPlp6evtPSBDlWHsYYL8=" crossorigin="anonymous"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', function(event) {
-      anchors.add("main h2, main h3, main h4");
-    });
-  </script>
-
-  <!--<script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.20.0/components/prism-core.min.js" integrity="sha256-9h14mWYYiQGkeAKg2JtijbqApb56kgw57WN6sI6dwH0=" crossorigin="anonymous"></script>
-  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.20.0/components/prism-clike.min.js" integrity="sha256-NGZ9KsF4gzg5+s/GJCF+iTIxrL1MMo1Cz1iMIPMwnCE=" crossorigin="anonymous"></script>
-  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.20.0/components/prism-c.min.js" integrity="sha256-7bhB6muzOsleE++vCiHNmfoJr6rN5xct1k2ONF4LI44=" crossorigin="anonymous"></script>
-  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.20.0/components/prism-cpp.min.js" integrity="sha256-FpxvZgQoLQgwXbHhrAj0vSNp8py8Q+VeBMN6V4TxguI=" crossorigin="anonymous"></script>-->
-
   <script>
   MathJax = {
     tex: {
@@ -42,8 +30,14 @@
       fontCache: 'global'
     }
   };
+
+  document.addEventListener('DOMContentLoaded', function() {
+    anchors.add("main h2, main h3, main h4");
+  });
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-chtml.js" integrity="sha256-XIXoRLPpvqxWRZiFmSYB0zGoUnsolpyHjMXToWk4AdI=" crossorigin="anonymous"></script>
+
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.5/es5/tex-chtml.js" integrity="sha256-XIXoRLPpvqxWRZiFmSYB0zGoUnsolpyHjMXToWk4AdI=" crossorigin="anonymous"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.2.2/anchor.min.js" integrity="sha256-E4RlfxwyJVmkkk0szw7LYJxuPlp6evtPSBDlWHsYYL8=" crossorigin="anonymous"></script>
 
   {{- if not .Site.IsServer -}}
       {{ template "_internal/google_analytics_async.html" . }}
