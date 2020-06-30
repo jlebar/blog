@@ -1,8 +1,9 @@
 languageCode = "en-us"
 baseURL = "https://jlebar.com/"
+title = "jlebar"
 copyright = "© {year}"
 
-theme = "codex"
+theme = "weblog"
 
 # Add your Disqus shortname here.
 # disqusShortname = ""
@@ -11,6 +12,8 @@ googleAnalytics = "UA-12786268-1"
 
 # Optional params
 [params]
+  subtitle = "one line of code at a time"
+
   # Follow the Hugo date/time format reference here: 
   # https://gohugo.io/functions/format/#gos-layout-string
   dateFormat = "2006-01-02"
