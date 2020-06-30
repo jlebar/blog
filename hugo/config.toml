@@ -16,7 +16,7 @@ googleAnalytics = "UA-12786268-1"
 
   # Follow the Hugo date/time format reference here: 
   # https://gohugo.io/functions/format/#gos-layout-string
-  dateFormat = "2006-01-02"
+  dateFormat = "January 1, 2006"
 
   # Links to your social accounts, comment/uncomment as needed. Icons will be displayed for those specified.
   #twitter = "https://twitter.com/<your handle>"
@@ -33,13 +33,11 @@ googleAnalytics = "UA-12786268-1"
   #   "Twitter", "GitHub", "Email", "Facebook", "GitLab", "Instagram", "LinkedIn", "YouTube"
   iconTitles = ["GitHub"]
 
-# This disables Hugo's default syntax highlighting in favor
-# of prismjs. If you wish to use Hugo's default syntax highlighting
-# over prismjs, remove this. You will also need to remove the prismjs
-# vendor script in layouts/blog/single.html.
+# Disables Hugo's default syntax highlighting in favor of prismjs.
 [markup]
   [markup.highlight]
-    codeFences = false
+    codeFences = true
+    noClasses = false
 
   # Set to false to disallow raw HTML in markdown files
   [markup.goldmark.renderer]

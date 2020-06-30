@@ -229,9 +229,11 @@ its argument by rvalue reference.  It might look like this.
 ```cpp
 class string {
  public:
-  string(const string& other);  // Copy constructor, exists pre C++11
+  // Copy constructor, exists pre C++11
+  string(const string& other);
 
-  string(string&& other) {      // Move constructor, new in C++11
+  // Move constructor, new in C++11
+  string(string&& other) {
     length = other.length;
     capacity = other.capacity;
     data = other.data;
@@ -280,9 +282,11 @@ to the assignment operator, `operator=`.  Here's what that looks like:
 ```cpp
 class string {
  public:
-  string& operator=(const string& other); // Copy assn operator, pre C++11
+  // Copy assn operator, pre C++11
+  string& operator=(const string& other);
 
-  string& operator=(string&& other) {     // Move assn operator, new in C++11
+  // Move assn operator, new in C++11
+  string& operator=(string&& other) {
     length = other.length;
     capacity = other.capacity;
     delete data;  // OK even if data is null
@@ -493,11 +497,15 @@ and maybe a cache miss.
 
 Similarly, instead of writing
 
-    void foo(const unique_ptr<Bar>& bar);
+```cpp
+void foo(const unique_ptr<Bar>& bar);
+```
 
 why not write
 
-    void foo(const Bar* bar);
+```cpp
+void foo(const Bar* bar);
+```
 
 The former is annoying because someone can only call your function if the data
 is *actually* stored in a `unique_ptr` somewhere.  But maybe it's stored on the
@@ -512,7 +520,7 @@ void foo(unique_ptr<T>&& ptr);
 
 consider simply
 
-```
+```cpp
 void foo(unique_ptr<T> ptr);
 ```
 

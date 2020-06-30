@@ -1,21 +1,19 @@
 {{ define "main" }}
 {{ $dateFormat := .Site.Params.dateFormat | default "Jan 2 2006" }}
 
-<div class="post">
+<article>
   <header>
     <h1>{{.Title}}</h1>
     <time datetime="{{ .Date }}">{{ .Date.Format $dateFormat }}</time>
+
+    {{ if .Params.toc }}
+    <div class="toc">{{ .TableOfContents }}</div>
+    {{ end }}
   </header>
 
-  {{ if .Params.toc }}
-  <div class="toc">{{ .TableOfContents }}</div>
-  {{ end }}
+  {{ .Content }}
+</article>
 
-  <article>
-      {{ .Content }}
-  </article>
-
-  {{ template "_internal/disqus.html" . }}
-</div>
+{{ template "_internal/disqus.html" . }}
 
 {{ end }}
