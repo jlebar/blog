@@ -44,20 +44,18 @@
   {{ end }}
 </div>
 
-{{/*
-  <li class="post">
-    <div class="post__header">
-      <time class="post__date" datetime="{{ .Date }}"
-        >{{ .Date.Format $dateFormat }}</time>
-      <h2 class="post__title">
-        <a href="{{.RelPermalink}}">{{ .Title }}</a>
-      </h2>
-      {{ partial "tags.html" .}}
-    </div>
-  </li>
-</ul>
-*/}}
-
+{{$feedurl := ""}}
+{{ with .OutputFormats.Get "atom" -}}
+  {{$feedurl = .Permalink}}
+{{ end }}
+<div id="rss-container">
+  <a href="{{$feedurl}}">
+    <img src="{{.Site.BaseURL}}/feed.svg" id="feed-img" />
+    Do you still use RSS?
+  </a>
+  <br>
+  <a href="https://blogtrottr.com/?subscribe={{$feedurl}}">✉️ Or do you prefer to emails?</a>
+</div>
 
 <footer>
   <a href="https://github.com/jlebar/blog">Made with love</a> with <a href="https://gohugo.io/">Hugo</a>
