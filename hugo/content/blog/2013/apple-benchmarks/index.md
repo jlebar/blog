@@ -1,7 +1,7 @@
 ---
 title: Mac OS 10.9 Browser Benchmarks
 date: 2013-06-12
-uuid: urn:uuid:1847eff0-d3d5-11e2-8d94-c82a1426416b
+id: urn:uuid:1847eff0-d3d5-11e2-8d94-c82a1426416b
 aliases:
   - /2013/6/12/Mac_OS_10.9_Browser_Benchmarks.html
 ---

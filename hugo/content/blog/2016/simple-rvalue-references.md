@@ -1,7 +1,7 @@
 ---
 title: A Practical Introduction to C++11 Rvalue References
 date: 2016-05-28
-uuid: urn:uuid:662a90cf-7171-404c-a70b-e507428f2e8f
+id: urn:uuid:662a90cf-7171-404c-a70b-e507428f2e8f
 aliases:
   - /2016/5/28/A_Practical_Introduction_to_C++11_Rvalue_References.html
 ---

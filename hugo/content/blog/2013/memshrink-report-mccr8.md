@@ -1,7 +1,7 @@
 ---
 title: MemShrink process, weeks 97-98
 date: 2013-05-08
-uuid: urn:uuid:4a38ae2e-b840-11e2-a458-782bcb9cb190
+id: urn:uuid:4a38ae2e-b840-11e2-a458-782bcb9cb190
 aliases:
   - /2013/5/8/MemShrink_process,_weeks_97-98.html
 ---

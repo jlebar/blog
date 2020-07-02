@@ -1,7 +1,7 @@
 ---
 title: A ghost story
 date: 2012-05-30
-uuid: urn:uuid:064f862a-aa71-11e1-a159-782bcb9cb190
+id: urn:uuid:064f862a-aa71-11e1-a159-782bcb9cb190
 aliases:
   - /2012/5/30/A_ghost_story.html
 ---

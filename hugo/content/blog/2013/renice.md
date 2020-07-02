@@ -1,7 +1,7 @@
 ---
 title: Beware of renice
 date: 2013-04-11
-uuid: urn:uuid:e20952ee-a305-11e2-ad4c-782bcb9cb190
+id: urn:uuid:e20952ee-a305-11e2-ad4c-782bcb9cb190
 aliases:
   - /2013/4/11/Beware_of_renice.html
 ---

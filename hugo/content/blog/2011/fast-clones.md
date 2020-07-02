@@ -1,7 +1,7 @@
 ---
 title: Faster and smaller clones of branches
 date: 2011-05-20
-uuid: urn:uuid:6148efe2-8319-11e0-87cd-e0f84735e6cc
+id: urn:uuid:6148efe2-8319-11e0-87cd-e0f84735e6cc
 aliases:
   - /2011/5/20/Faster_and_smaller_clones_of_branches.html
 ---

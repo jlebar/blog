@@ -1,7 +1,7 @@
 ---
 title: Building faster by parallelizing more
 date: 2011-09-01
-uuid: urn:uuid:18fdc594-d4ba-11e0-a8fa-782bcb9cb190
+id: urn:uuid:18fdc594-d4ba-11e0-a8fa-782bcb9cb190
 aliases:
   - /2011/9/1/Building_faster_by_parallelizing_more.html
 ---

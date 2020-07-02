@@ -1,7 +1,7 @@
 ---
 title: "The carrot, the stick, and the wrench: Add-on leaks are everyone's problem."
 date: 2011-11-13
-uuid: urn:uuid:fb6ba78a-0e70-11e1-be7f-782bcb9cb190
+id: urn:uuid:fb6ba78a-0e70-11e1-be7f-782bcb9cb190
 aliases:
   - /2011/11/13/The_carrot,_the_stick,_and_the_wrench:_Add-on_leaks_are_everyone's_problem..html
 ---

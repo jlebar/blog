@@ -1,7 +1,7 @@
 ---
 title: Replacing Bash
 date: 2010-02-01
-uuid: urn:uuid:7baf959e-1078-11df-a948-08002769b3d1
+id: urn:uuid:7baf959e-1078-11df-a948-08002769b3d1
 aliases:
   - /2010/2/1/Replacing_Bash.html
 ---

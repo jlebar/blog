@@ -1,7 +1,7 @@
 ---
 title: Programmatic control of the perf profiler from Firefox
 date: 2012-04-24
-uuid: urn:uuid:ec5209ac-8e7b-11e1-b047-782bcb9cb190
+id: urn:uuid:ec5209ac-8e7b-11e1-b047-782bcb9cb190
 aliases:
   - /2012/4/24/Programmatic_control_of_the_perf_profiler_from_Firefox.html
 ---

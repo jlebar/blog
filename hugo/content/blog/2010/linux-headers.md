@@ -1,7 +1,7 @@
 ---
 title: kernel upgrade bustage
 date: 2010-03-22
-uuid: urn:uuid:4125ab24-35f4-11df-8495-08002769b3d1
+id: urn:uuid:4125ab24-35f4-11df-8495-08002769b3d1
 aliases:
   - /2010/3/22/kernel_upgrade_bustage.html
 ---

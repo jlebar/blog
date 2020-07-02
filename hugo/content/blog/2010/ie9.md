@@ -1,7 +1,7 @@
 ---
 title: "IE9 Hardware Acceleration"
 date: 2010-09-13
-uuid: urn:uuid:856bc436-bf0a-11df-8850-0026b9792740
+id: urn:uuid:856bc436-bf0a-11df-8850-0026b9792740
 aliases:
   - /2010/9/13/"IE9_Hardware_Acceleration".html
 ---

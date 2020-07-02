@@ -1,7 +1,7 @@
 ---
 title: gold
 date: 2010-03-17
-uuid: urn:uuid:53f74dde-9d82-4a33-8c04-97672d32ac26
+id: urn:uuid:53f74dde-9d82-4a33-8c04-97672d32ac26
 aliases:
   - /2010/3/17/gold.html
 ---

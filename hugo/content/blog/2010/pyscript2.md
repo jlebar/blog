@@ -1,7 +1,7 @@
 ---
 title: Replacing Bash, part 2
 date: 2010-02-03
-uuid: urn:uuid:b189712a-113c-11df-a9d6-08002769b3d1
+id: urn:uuid:b189712a-113c-11df-a9d6-08002769b3d1
 aliases:
   - /2010/2/3/Replacing_Bash,_part_2.html
 ---
