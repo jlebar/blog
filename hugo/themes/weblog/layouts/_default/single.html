@@ -11,7 +11,13 @@
     {{ end }}
   </header>
 
-  {{ .Content }}
+  <div id=content>
+    {{ .Content }}
+  </div>
 </article>
+
+<div id="back-to-archive">
+  <a href="{{.Site.BaseURL}}/blog">All posts</a>
+</div>
 
 {{ end }}

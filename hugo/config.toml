@@ -2,8 +2,9 @@ languageCode = "en-us"
 baseURL = "https://jlebar.com/"
 title = "jlebar"
 copyright = "© {year}"
+pluralizelisttitles = false
 
-theme = "weblog"
+theme = ["hugo-atom-feed", "weblog"]
 
 # Add your Disqus shortname here.
 # disqusShortname = ""
@@ -55,3 +56,6 @@ googleAnalytics = "UA-12786268-1"
   name = "blog"
   title = "Blog"
   url = "/blog"
+
+[outputs]
+  section = ["HTML", "ATOM"]

@@ -64,21 +64,61 @@ code {
 footer {
   text-align: center;
   font-size: 0.8rem;
-  margin-top: 3em;
+  margin-top: 2em;
 }
 
 #archive {
   display: grid;
-  column-gap: 1em;
-  row-gap: 0.5em;
-  grid-template-columns: 4em 7em 2em auto;
-  .year, .month, .day {
-    text-align: right;
-    font-weight: bold;
+  .year { grid-column: 1; }
+  .month { grid-column: 2; }
+  .day { grid-column: 3; }
+
+  grid-template-columns: repeat(3, min-content) auto;
+
+  $small_viewport: 40em;
+  @media (min-width: $small_viewport) {
+    row-gap: 0.5em;
+    column-gap: 2em;
+    .year, .month, .day {
+      text-align: right;
+      font-weight: bold;
+    }
+    .redundant { display: none; }
+    .post-title { grid-column: 4; }
+  }
+  @media not all and (min-width: $small_viewport) {
+    column-gap: 1em;
+    .year, .month, .day {
+      font-style: italic;
+      color: #777;
+    }
+    .day {
+      text-align: right;
+    }
+    .post-title {
+      margin-bottom: 0.5em;
+      grid-column: 1 / 5;
+    }
   }
 }
 
-/* Chrome style, based on "abap".
+#back-to-archive {
+  display: flex;
+  justify-content: center;
+  margin-top: 2em;
+  a {
+    padding-top: 2em;
+    display: block;
+    border-top: 1px solid black;
+    text-align: center;
+    font-weight: bold;
+    max-width: 50em;
+    width: 60%;
+  }
+  width: 100%;
+}
+
+/* Chrome syntax highlighting style, based on "abap".
    hugo gen chromastyles --style=abap */
 .chroma {
   /* Other */ .x {}

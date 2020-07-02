@@ -4,3 +4,6 @@
 [submodule "hugo/themes/codex"]
 	path = hugo/themes/codex
 	url = https://github.com/jlebar/hugo-theme-codex.git
+[submodule "hugo/themes/hugo-atom-feed"]
+	path = hugo/themes/hugo-atom-feed
+	url = https://github.com/kaushalmodi/hugo-atom-feed.git
