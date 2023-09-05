@@ -1,6 +1,6 @@
 import logging
-from htmlentitydefs import name2codepoint, entitydefs
-from utf8_html_parser import UTF8HTMLParser
+from html.entities import name2codepoint, entitydefs
+from .utf8_html_parser import UTF8HTMLParser
 
 class _Parser(UTF8HTMLParser):
     '''

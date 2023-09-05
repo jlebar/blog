@@ -2,7 +2,7 @@ import email
 import sys
 import uuid
 
-from post import Post
+from .post import Post
 
 def _set_uuid(filename):
   try:
@@ -13,7 +13,7 @@ def _set_uuid(filename):
           return
       post_file.add_header('uuid', uuid.uuid1().urn)
       file(filename, 'w').write(post_file.as_string())
-  except IOError, error:
+  except IOError as error:
       raise SystemExit(error)
 
 def command_uuid(args, options):

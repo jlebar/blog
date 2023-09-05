@@ -1,5 +1,5 @@
 import re
-from utf8_html_parser import UTF8HTMLParser
+from .utf8_html_parser import UTF8HTMLParser
 
 # Ignore http:// ftp:// mailto: javascript: ...
 _scheme_regex = re.compile(r'\w+:')

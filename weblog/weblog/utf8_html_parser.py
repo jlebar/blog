@@ -1,5 +1,5 @@
-from cgi import escape
-from HTMLParser import HTMLParser
+from html import escape
+from html.parser import HTMLParser
 
 class UTF8HTMLParser(HTMLParser):
     '''

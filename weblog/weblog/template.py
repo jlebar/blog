@@ -2,17 +2,18 @@ import os
 import sys
 import datetime
 
-import rfc3339
+from . import rfc3339
 
 try:
     from jinja2 import Environment
     from jinja2 import FileSystemLoader, ChoiceLoader, PackageLoader
-    from jinja2 import environmentfilter, contextfilter, Markup
+    from jinja2 import pass_context
+    from markupsafe import Markup
 except ImportError:
     raise SystemExit('Please install Jinja 2 (http://jinja.pocoo.org/2/)'
                      ' to use Weblog')
 
-@contextfilter
+@pass_context
 def renderstring(context, value):
     '''
     Render the passed string. It is similar to the tag rendertemplate,

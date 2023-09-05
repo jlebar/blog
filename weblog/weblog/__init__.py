@@ -6,9 +6,9 @@ def main():
     import logging
     from optparse import OptionParser, SUPPRESS_HELP
 
-    from publish import command_publish
-    from date import command_date
-    from post_uuid import command_uuid
+    from .publish import command_publish
+    from .date import command_date
+    from .post_uuid import command_uuid
 
     _COMMANDS = ('publish', 'date', 'uuid')
 

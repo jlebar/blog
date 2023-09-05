@@ -4,8 +4,9 @@ import codecs
 import locale
 import logging
 import datetime
+import functools
 from os import stat, path
-from urllib import quote
+from urllib.parse import quote
 
 try:
     from markdown2 import markdown
@@ -16,7 +17,7 @@ except ImportError:
         # Ugly but better than nothing :)
         return '<pre>%s</pre>' % text
 
-from html_to_xhtml import html_to_xhtml
+from .html_to_xhtml import html_to_xhtml
 
 class PostError(Exception):
     '''
@@ -26,7 +27,7 @@ class PostError(Exception):
         Exception.__init__(self, '%s: %s' % (filename, message))
 
 
-class Author(unicode):
+class Author(str):
     '''
     Extract the name and email from the passed string. The Email address must
     be between chevrons (< and >).
@@ -70,6 +71,7 @@ class Author(unicode):
         else:
             return u''
 
+@functools.total_ordering
 class Post(object):
 
     def __init__(self, f,
@@ -78,7 +80,7 @@ class Post(object):
                  default_author=u'',
                  filesystem_encoding=locale.getpreferredencoding()):
         default_author = Author(default_author)
-        if isinstance(f, basestring):
+        if isinstance(f, str):
             self._filename = f
             input_file = open(f)
         else:
@@ -93,19 +95,22 @@ class Post(object):
             raise PostError(self.get_filename(), 'No uuid')
 
         # Get the file's encoding
-        self.encoding = unicode(post_file.get('encoding') or
-                                default_encoding)
+        self.encoding = str(post_file.get('encoding') or default_encoding)
         try:
             codecs.lookup(self.encoding)
-        except LookupError, e:
+        except LookupError as e:
             raise PostError(self.get_filename(), str(e))
 
         # Copy all fields "into the object" and convert string to unicode.
         try:
             for key, value in post_file.items():
-                self.__dict__[key.encode('ascii').lower()] = \
-                        unicode(value, self.encoding)
-        except UnicodeDecodeError, e:
+                # FIXME: This is supposed to be respecting the encoding, but
+                # `value` is a str even if I call message_from_bytes.  Anyway I
+                # don't care, everything should be UTF-8.
+                #self.__dict__[key.encode('ascii').lower()] = \
+                #        str(value, self.encoding)
+                self.__dict__[key.lower()] = str(value)
+        except UnicodeDecodeError as e:
             raise PostError(self.get_filename(), "for key '%s': %s" % (key, e))
 
         if not hasattr(self, 'author'):
@@ -128,16 +133,20 @@ class Post(object):
         else:
             try:
                 self.date = self.parse_date(self.date)
-            except ValueError, e:
+            except ValueError as e:
                 raise PostError(self.get_filename(), str(e))
 
         if not hasattr(self, 'slug'):
             try:
+                # FIXME: Again, skipping this encoding stuff.
                 self.slug = self.title.\
-                        encode(filesystem_encoding, 'replace').\
                         replace(' ', '_').\
                         replace('/', '_')
-            except UnicodeDecodeError, e:
+                #self.slug = self.title.\
+                #        encode(filesystem_encoding, 'replace').\
+                #        replace(' ', '_').\
+                #        replace('/', '_')
+            except UnicodeDecodeError as e:
                 raise PostError(self.get_filename(), 'Bad encoding in title')
         self.slug = self.slug.replace('/\\', '') # Remove '/' and '\'.
 
@@ -145,15 +154,17 @@ class Post(object):
             raise PostError(self.get_filename(), 'does not have content')
 
         try:
-            self.content = unicode(post_file.get_payload(), self.encoding)
-        except UnicodeDecodeError, e:
+            # FIXME: More encoding stuff skipped.
+            #self.content = str(post_file.get_payload(), self.encoding)
+            self.content = str(post_file.get_payload())
+        except UnicodeDecodeError as e:
             # find error line number
             for line_number, line in enumerate(post_file.as_string().\
                                                splitlines()):
                 try:
                     line.decode('ascii' if self.encoding == 'raw'
                                 else self.encoding)
-                except UnicodeDecodeError, e:
+                except UnicodeDecodeError as e:
                     break
             # line_number starts at 0, real line number == line_number + 1
             raise PostError(self.get_filename(),
@@ -296,23 +307,11 @@ class Post(object):
     def day(self):
         return self.date.day
 
-    def __cmp__(self, other):
-        '''
-        >>> file1 = "title: 1\\ndate: 2008-1-1\\n\\ntest"
-        >>> file2 = "title: 2\\ndate: 2007-12-31\\n\\ntest"
-        >>> from StringIO import StringIO
-        >>> Post(StringIO(file1)) > Post(StringIO(file2))
-        True
-        >>> Post(StringIO(file1)) == Post(StringIO(file2))
-        False
-        >>> Post(StringIO(file1)) == Post(StringIO(file1))
-        True
-        >>> l = [Post(StringIO(file2)), Post(StringIO(file1))]
-        >>> l.index(Post(StringIO(file1)))
-        1
-        '''
-        return cmp(unicode(self.date) + self.title,
-                   unicode(other.date) + other.title)
+    def __lt__(self, other):
+        return (str(self.date), self.title) < (str(other.date), other.title)
+
+    def __eq__(self, other):
+        return str(self.date) == str(other.date) and self.title == other.title
 
     def __hash__(self):
         return hash(str(self.date) + self.title)

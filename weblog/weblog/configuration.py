@@ -17,7 +17,7 @@ def _encoding(key, config):
 def read(filename):
     config = dict()
     try:
-        execfile(filename, config)
+        exec(open(filename).read(), config)
     except Exception:
         logging.error('Unable to read configuration file "%s"' % filename)
         raise

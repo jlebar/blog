@@ -3,7 +3,7 @@ import logging
 import datetime
 import email
 
-from post import Post
+from .post import Post
 
 def _format_date(date):
     '''
@@ -62,7 +62,7 @@ def command_date(args, options):
         else:
             try:
                 date = Post.parse_date(' '.join(args))
-            except ValueError, error:
+            except ValueError as error:
                 raise SystemExit(error)
     else:
         date = datetime.datetime.now()
@@ -74,5 +74,5 @@ def command_date(args, options):
         else:
             post_file.add_header('date', _format_date(date))
         file(filename, 'w').write(post_file.as_string())
-    except IOError, error:
+    except IOError as error:
         raise SystemExit(error)

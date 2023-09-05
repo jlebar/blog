@@ -5,10 +5,10 @@ import codecs
 from shutil import copy
 
 import weblog
-import configuration
-from template import environment
-from html_full_url import html_full_url
-from post import Post, PostError
+from . import configuration
+from .template import environment
+from .html_full_url import html_full_url
+from .post import Post, PostError
 
 def _write_file(filename, encoding, content):
     f = codecs.open(filename, mode='w', encoding=encoding)
@@ -75,7 +75,7 @@ def command_publish(args, options):
     try:
         config = configuration.read(os.path.join(source_dir or '.',
                                                  options.configuration_file))
-    except IOError, error:
+    except IOError as error:
         logging.error('Error while loading configuration file')
         raise SystemExit(error)
 
@@ -91,7 +91,7 @@ def command_publish(args, options):
 
     try:
         post_list = sorted(load_posts(source_dir, config), reverse=True)
-    except (IOError, PostError), e:
+    except (IOError, PostError) as e:
         logging.error('Error while loading post files.')
         raise SystemExit(e)
 
@@ -155,7 +155,7 @@ def command_publish(args, options):
     else:
         try:
             generate_all()
-        except IOError, e:
+        except IOError as e:
             logging.error('Error while generating files ...')
             raise SystemExit(e)
         else:
