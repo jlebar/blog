@@ -62,5 +62,6 @@ def environment(source_dir):
     env = Environment(loader=ChoiceLoader(loaders), trim_blocks=True)
     env.filters['renderstring'] = renderstring
     env.filters['rfc3339'] = rfc3339_
-    env.filters['decode'] = decode
+    #env.filters['decode'] = decode
+    env.filters['decode'] = lambda x: x
     return env
