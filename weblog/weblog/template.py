@@ -41,7 +41,7 @@ def rfc3339_(value):
 
 def decode(value):
     if value:
-        return value.encode('ascii', 'xmlcharrefreplace')
+        return value.encode('ascii', 'xmlcharrefreplace').decode('utf-8')
     else:
         return ''
 
@@ -62,6 +62,5 @@ def environment(source_dir):
     env = Environment(loader=ChoiceLoader(loaders), trim_blocks=True)
     env.filters['renderstring'] = renderstring
     env.filters['rfc3339'] = rfc3339_
-    #env.filters['decode'] = decode
-    env.filters['decode'] = lambda x: x
+    env.filters['decode'] = decode
     return env
