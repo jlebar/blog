@@ -15,6 +15,16 @@
 {% endblock %}
 </head>
 <body>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-EJ74RNN26E"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-EJ74RNN26E');
+</script>
+
 <div id="menu">
 <p>
   <a href='{{ top_dir }}index.html'>Latest posts</a><br>
@@ -43,15 +53,6 @@ Published using <a href='http://henry.precheur.org/weblog/'>Weblog</a>
 </p>
 </div>
 {% endblock %}
-<script type="text/javascript">
-var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-</script>
-<script type="text/javascript">
-try {
-  var pageTracker = _gat._getTracker("UA-12786268-1");
-  pageTracker._trackPageview();
-} catch(err) {}</script>
 </body>
 </html>
 {# vim:set ft=htmljinja: #}
