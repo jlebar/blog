@@ -11,7 +11,7 @@ clean:
 	rm -rf output
 
 stage: all
-	rsync -a output/ jlebar_jlebar-blog@ssh.phx.nearlyfreespeech.net:staging
+	rsync -a output/ jlebar_jlebar-blog@ssh.nyc1.nearlyfreespeech.net:staging
 
 publish: all
-	rsync -a output/ jlebar_jlebar-blog@ssh.phx.nearlyfreespeech.net:
+	rsync -a output/ jlebar_jlebar-blog@ssh.nyc1.nearlyfreespeech.net:
