@@ -113,7 +113,7 @@ Suppose we create \\( C\_o \\) independent filters and repeat the process above
 once for each filter.  This results in \\( C\_o \\) 2D output images.
 
 Now the output is a 3D array of dimension \\( (H\_o, W\_o, C\_o) \\).  The
-filter gains an additional dimension, \\( (H\_f, W\_f, C\_i, C\_o) \\).
+filter also gains an additional dimension, \\( (H\_f, W\_f, C\_i, C\_o) \\).
 
 Notice that we take the dot product of each element of the input image, a
 vector in \\( \mathbb{R}^{C\_i} \\), with \\( C_o \\) different vectors from
@@ -145,7 +145,7 @@ element is just one matrix-vector product.
 But that's exactly the definition of matrix-matrix multiplication!
 
 Concretely, the LHS matrix has dimensions \\( ( N \\times H\_i \\times W\_i,
-C\_i) \\), and the RHS matrix has dims \\( C\_i, C\_o \\).  The resulting
+C\_i) \\), and the RHS matrix has dims \\( ( C\_i, C\_o ) \\).  The resulting
 matrix has dims \\( ( N \\times H\_i \\times W\_i, C\_o ) \\).  In the case of
 a 1x1 conv the height/width don't change, so this is equivalent to \\( ( N
 \\times H\_o \\times W\_o, C\_o ) \\), as desired. □
