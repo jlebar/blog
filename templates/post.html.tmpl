@@ -19,19 +19,5 @@
 <div class='post-content'>
 {{ content|decode }}</div>
 
-<div id="post-footer">
-    <div id="post-footer-content">
-        <a href="{{ top_dir }}index.html">Latest posts</a> |
-        <a href="{{ top_dir }}archives.html">Archives</a>
-    </div>
-    <hr>
-</div>
-
-<a name="comments"></a>
-<script type="text/javascript">
-    disqus_identifier="{{ uuid }}";
-</script>
-<div id="disqus_thread"></div><script type="text/javascript" src="http://disqus.com/forums/jlebar/embed.js"></script>
-
 {% endblock %}
 {# vim:set ft=htmljinja: #}
