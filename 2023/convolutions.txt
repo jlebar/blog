@@ -2,7 +2,7 @@ title: ML Convolutions Explained Differently
 slug: convolutions
 date: 2023-09-11
 uuid: urn:uuid:59343F4A-DF3E-4DB1-8AD6-A09DE5E8D7B0
-files: 2023/conv-basic.jpg 2023/conv-input-channels.jpg 2023/conv-output-channels.jpg
+files: 2023/conv-basic.jpg 2023/conv-no-channels.jpg 2023/conv-input-channels.jpg 2023/conv-output-channels.jpg
 
 It took me years before I understood exactly what a convolution is in the
 machine learning context.  I understood the simple "filter moving over an
@@ -36,13 +36,32 @@ arrays of real numbers:
 <img src="2023/conv-basic.jpg" width=100% alt="Basic 3x3 convolution">
 
 The basic convolution drags the filter over the image.  At each point of
-overlap, we multiply the values in the filter by the values in the image that
-are "beneath" them, and we sum up these products.  We thus produce an output
-image of size \\( (H\_o, W_o) \\) (output height/width).
+overlap, we produce one output element by multiplying the values in the filter
+by the values in the image that are "beneath" them and adding up these
+products.
 
-The output is a little smaller than the input image because the kernel can't
-exceed the bounds of the input.  (You can fix this by padding the input with 0s
-around the edges.)
+<img src="2023/conv-no-channels.jpg" width=100% alt="Creating one element of a basic 3x3 convolution">
+
+When the filter is in the top left of the input image, this process produces
+the top-leftmost output point.  If the filter moves (say) one element
+rightward, we now generate the output point one element to the right from the
+top-left.
+
+We thus produce an output image of size \\( (H\_o, W_o) \\) (output
+height/width).  The output is a little smaller than the input image because the
+kernel can't exceed the bounds of the input.  (You can fix this by padding the
+input with 0s around the edges.)
+
+To make up some notation describing the dimensions of the input/output arrays,
+we might write
+
+\\[
+  \\operatorname{ConvBasic}(
+    (H\_i, W\_i),\\ 
+    (H\_f, W\_f)
+  ) \\rightarrow
+  (H\_o, W\_o).
+\\]
 
 If you're not familiar with all this, check out [this
 explainer](https://towardsdatascience.com/intuitively-understanding-convolutions-for-deep-learning-1f6f42faee1),
@@ -71,9 +90,19 @@ An ML convolution is an operation which operates on 4D arrays of real numbers.
       * \\( W\_o \\) — output width
       * \\( C\_o \\) — output channels.
 
-This is the operation I want to break down in this post.  We'll take the basic
-convolution and add one dimension at a time, until we have the full ML
-convolution.
+We can write this in our notation from above as
+
+\\[
+  \\operatorname{MLConv}(
+    (N, H\_i, W\_i, C\_i),\\ 
+    (H\_f, W\_f, C\_i, C\_o)
+  ) \\rightarrow
+  (N, H\_o, W\_o, C\_o).
+\\]
+
+This is the operation I want to break down in this post.  We'll take \\(
+\operatorname{ConvBasic} \\) and add one dimension at a time, until we have the
+full \\( \operatorname{MLConv} \\) function.
 
 # Input Channels
 
@@ -97,12 +126,22 @@ It corresponds to dim \\( C\_i \\).
 
 So now we have a function which takes as input two 2D arrays, of size \\(
 (H\_i, W\_i) \\) and \\( (H\_f, W\_f) \\), where each element is a vector in
-\\( \\mathbb{R}^{C\_i} \\).  Or alternatively, we take two 3D arrays of real
+\\( \\mathbb{R}^{C\_i} \\).  Or equivalently, we take two 3D arrays of real
 numbers, of dimensions \\( (H\_i, W\_i, C\_i) \\) and \\( (H\_f, W\_f, C\_i)
 \\).
 
-This operation outputs a 2D array of real numbers of size \\( (H\_o, W\_o) \\),
-where the output height/width are a bit smaller than the input.
+This operation still outputs a 2D array of real numbers of size \\( (H\_o,
+W\_o) \\), where the output height/width are a bit smaller than the input.
+
+In our notation, this is
+
+\\[
+  \\operatorname{ConvInputChannels}(
+    (H\_i, W\_i, C\_i),\\ 
+    (H\_f, W\_f, C\_i)
+  ) \\rightarrow
+  (H\_o, W\_o).
+\\]
 
 # Output Channels
 
@@ -118,9 +157,19 @@ filter also gains an additional dimension, \\( (H\_f, W\_f, C\_i, C\_o) \\).
 Notice that we take the dot product of each element of the input image, a
 vector in \\( \mathbb{R}^{C\_i} \\), with \\( C_o \\) different vectors from
 the filter.  You can think of this as taking a repeated dot product, or
-alternatively as a matrix-vector multiplication.
+equivalently as a matrix-vector multiplication.
 
 <img src="2023/conv-output-channels.jpg" width=100% alt="Vector of output elements is the filter matrix times an img vector">
+
+In our notation, we now have
+
+\\[
+  \\operatorname{ConvInOutChannels}(
+    (H\_i, W\_i, C\_i),\\ 
+    (H\_f, W\_f, C\_i, C\_o)
+  ) \\rightarrow
+  (H\_o, W\_o, C\_o).
+\\]
 
 # Batch Dimension
 
@@ -130,7 +179,18 @@ To add this, we have \\( N \\) independent input images which generate \\( N
 \\) independent output images.  This is the batch dimension.  Easy enough.  I'm
 not going to attempt to draw it.  :)
 
-Now we have all four dimensions!  That's all an ML convolution is.
+We now have all four dimensions, we can properly call this \\(
+\\operatorname{MLConv} \\):
+
+\\[
+  \\operatorname{MLConv}(
+    (N, H\_i, W\_i, C\_i),\\ 
+    (H\_f, W\_f, C\_i, C\_o)
+  ) \\rightarrow
+  (N, H\_o, W\_o, C\_o).
+\\]
+
+That's all an ML convolution is!
 
 # 1x1 Convolutions
 
@@ -144,8 +204,25 @@ element is just one matrix-vector product.
 
 But that's exactly the definition of matrix-matrix multiplication!
 
-Concretely, the LHS matrix has dimensions \\( ( N \\times H\_i \\times W\_i,
-C\_i) \\), and the RHS matrix has dims \\( ( C\_i, C\_o ) \\).  The resulting
-matrix has dims \\( ( N \\times H\_i \\times W\_i, C\_o ) \\).  In the case of
-a 1x1 conv the height/width don't change, so this is equivalent to \\( ( N
-\\times H\_o \\times W\_o, C\_o ) \\), as desired. □
+We can write this as:
+
+\\[
+\\operatorname{MLConv}(
+  (N, H\_i, W\_i, C\_i),\\ 
+  (1, 1, C\_i, C\_o)
+) \\rightarrow
+(N, H\_o, W\_o, C\_o) \\iff
+\\]
+\\[
+\\operatorname{Matmul}(
+  (N \\times H\_i \\times W\_i, C\_i),\\ 
+  (C\_i, C\_o)
+) \\rightarrow
+(N \\times H\_i \\times W\_i, C\_o).
+\\]
+
+In the case of a 1x1 conv the height/width don't change, so this is equivalent
+to \\( ( N \\times H\_o \\times W\_o, C\_o ) \\), as desired. □
+
+*Thanks to George Karpenkov and Marek Kolodziej for their feedback on drafts of
+this post.*
