@@ -2,7 +2,7 @@ title: ML Convolutions Explained Differently
 slug: convolutions
 date: 2023-09-11
 uuid: urn:uuid:59343F4A-DF3E-4DB1-8AD6-A09DE5E8D7B0
-files: 2023/conv-basic.jpg 2023/conv-no-channels.jpg 2023/conv-input-channels.jpg 2023/conv-output-channels.jpg
+files: 2023/conv-basic.jpg 2023/conv-no-channels.jpg 2023/conv-input-channels.jpg 2023/conv-output-channels.jpg 2023/conv-full.jpg
 
 It took me years before I understood exactly what a convolution is in the
 machine learning context.  I understood the simple "filter moving over an
@@ -18,7 +18,7 @@ convolution.  I haven't seen it explained this way anywhere else, so this is
 what I want to show in this post.  Maybe it will help you like it helped me.
 
 As a bonus, I'll show how this perspective makes it straightforward to observe
-the fact that 1x1 ML convolutions are just matmuls.
+the fact that 1x1 ML convolutions are just matrix multiplications.
 
 # Basic Convolutions
 
@@ -111,7 +111,7 @@ First, let's add input channels to the image.
 Consider the elements of the image.  Instead of them being real numbers,
 suppose they're vectors in \\( \mathbb{R}^n \\).  For example, maybe your image is
 RGB; in this case, \\( n=3 \\).  Or maybe your image is the result of an intermediate
-layer in a convnet; in this case, maybe \\( n=128 \\).
+layer in a convolutional net; in this case, maybe \\( n=128 \\).
 
 How do we "multiply" the elements of the image by the filter?  One option is to
 let the elements of the filter also be vectors in \\( \mathbb{R}^n \\).  Now when we
@@ -176,10 +176,18 @@ In our notation, we now have
 The only remaining dimension to handle is the "batch" dimension \\( N \\).
 
 To add this, we have \\( N \\) independent input images which generate \\( N
-\\) independent output images.  This is the batch dimension.  Easy enough.  I'm
-not going to attempt to draw it.  :)
+\\) independent output images.  This is the batch dimension.
 
-We now have all four dimensions, we can properly call this \\(
+Now each output element is an \\( C\_o, N \\) matrix, the sum of matrices
+formed by multiplying a \\( C\_o, C\_i \\) filter element by a \\( C\_i, N \\)
+matrix.
+
+<img src="2023/conv-full.jpg" width=100% alt="Output NCo matrix is NCi @ CiCo">
+
+As before, we repeat this process for each of the \\( H\_o, W\_o \\) output
+elements.
+
+We now have all four dimensions, so we can properly call this \\(
 \\operatorname{MLConv} \\):
 
 \\[
@@ -190,6 +198,14 @@ We now have all four dimensions, we can properly call this \\(
   (N, H\_o, W\_o, C\_o).
 \\]
 
+Notice that the only difference between these four functions is in how we
+"multiply" elements.
+
+ * In \\( \operatorname{ConvBasic} \\) we multiply two scalars.
+ * In \\( \operatorname{ConvInputChannels} \\) we multiply two vectors.
+ * In \\( \operatorname{ConvInOutChannels} \\) we multiply a matrix and a vector.
+ * Finally, in \\( \operatorname{MLConv} \\) we multiply two matrices.
+
 That's all an ML convolution is!
 
 # 1x1 Convolutions
@@ -198,31 +214,20 @@ Now for our bonus fact.  Suppose the filter's height and width are 1 — i.e. \\
 H\_i = W\_i = 1 \\).  I claim that this convolution is just a matrix
 multiplication.
 
-To see how, consider that in a (say) 3x3 convolution, each output element is
-the sum of 9 matrix-vector products.  So with a 1x1 convolution, each output
-element is just one matrix-vector product.
+First, observe that the batch, image height, and image width dimensions are
+interchangeable in a convolution with a 1x1 filter.  That is, because there's
+no "mixing" along the height/width, we can reshape a \\( (N, H\_i, W\_i, C\_i)
+\\) input into \\( ( N \times H\_i \times W_i, 1, 1, C\_i ) \\), do the conv,
+and then reshape back to the desired output shape.
 
-But that's exactly the definition of matrix-matrix multiplication!
+So it's sufficient to show that a conv with 1x1 filter and input height/width 1
+is a matmul.
 
-We can write this as:
+But look at the diagram for "Batch Dimension" above.  If the input height and
+width are 1, then there's only one output element.  And if the filter size is
+1x1, then there's only one term on the RHS, so the one output element is
+computed as a matmul.  Thus, the whole operation is equivalent to a single
+matrix multiply! □
 
-\\[
-\\operatorname{MLConv}(
-  (N, H\_i, W\_i, C\_i),\\ 
-  (1, 1, C\_i, C\_o)
-) \\rightarrow
-(N, H\_o, W\_o, C\_o) \\iff
-\\]
-\\[
-\\operatorname{Matmul}(
-  (N \\times H\_i \\times W\_i, C\_i),\\ 
-  (C\_i, C\_o)
-) \\rightarrow
-(N \\times H\_i \\times W\_i, C\_o).
-\\]
-
-In the case of a 1x1 conv the height/width don't change, so this is equivalent
-to \\( ( N \\times H\_o \\times W\_o, C\_o ) \\), as desired. □
-
-*Thanks to George Karpenkov and Marek Kolodziej for their feedback on drafts of
-this post.*
+*Thanks to George Karpenkov, Marek Kolodziej, Blake Hechtman, and Kyle Huey for
+their feedback on drafts of this post.*
