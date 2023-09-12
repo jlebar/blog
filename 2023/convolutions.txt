@@ -1,0 +1,151 @@
+title: ML Convolutions Explained Differently
+slug: convolutions
+date: 2023-09-11
+uuid: urn:uuid:59343F4A-DF3E-4DB1-8AD6-A09DE5E8D7B0
+files: 2023/conv-basic.jpg 2023/conv-input-channels.jpg 2023/conv-output-channels.jpg
+
+It took me years before I understood exactly what a convolution is in the
+machine learning context.  I understood the simple "filter moving over an
+image" convolution, but I couldn't figure out how to translate that into the
+operation that's performed by machine learning.
+
+I read posts that used complex 4D diagrams (3D plus animation!) or 6-deep
+nested `for` loops.  Nothing against that if it makes sense to you, but it
+never did to me.
+
+It turns out there's a simple transformation from a basic convolution to an ML
+convolution.  I haven't seen it explained this way anywhere else, so this is
+what I want to show in this post.  Maybe it will help you like it helped me.
+
+As a bonus, I'll show how this perspective makes it straightforward to observe
+the fact that 1x1 ML convolutions are just matmuls.
+
+# Basic Convolutions
+
+To review, a "basic convolution" is a function which takes as input two 2D
+arrays of real numbers:
+
+  * the "image", with dimensions
+      * \\( H\_i \\) — input height
+      * \\( W\_i \\) — input width, and
+  * the "filter" (also known as the "kernel"), with dimensions
+      * \\( H\_f \\) — filter height
+      * \\( W\_f \\) — filter width.
+    We expect the filter to be smaller than the image.
+
+<img src="2023/conv-basic.jpg" width=100% alt="Basic 3x3 convolution">
+
+The basic convolution drags the filter over the image.  At each point of
+overlap, we multiply the values in the filter by the values in the image that
+are "beneath" them, and we sum up these products.  We thus produce an output
+image of size \\( (H\_o, W_o) \\) (output height/width).
+
+The output is a little smaller than the input image because the kernel can't
+exceed the bounds of the input.  (You can fix this by padding the input with 0s
+around the edges.)
+
+If you're not familiar with all this, check out [this
+explainer](https://towardsdatascience.com/intuitively-understanding-convolutions-for-deep-learning-1f6f42faee1),
+up to but not including the section entitled "the multi-channel version".
+
+# ML Convolutions
+
+The basic convolution is simple enough.  But an "ML convolution" is a different
+beast.
+
+An ML convolution is an operation which operates on 4D arrays of real numbers.
+
+  * Input 1: the "image", with dimensions
+      * \\( N \\) — batch
+      * \\( H\_i \\) — input height
+      * \\( W\_i \\) — input width
+      * \\( C\_i \\) — input channels,
+  * Input 2: "filter", with dimensions
+      * \\( H\_f \\) — filter height
+      * \\( W\_f \\) — filter width
+      * \\( C\_i \\) — input channels
+      * \\( C\_o \\) — output channels, and
+  * Output: the "output image", with dimensions
+      * \\( N \\) — batch
+      * \\( H\_o \\) — output height
+      * \\( W\_o \\) — output width
+      * \\( C\_o \\) — output channels.
+
+This is the operation I want to break down in this post.  We'll take the basic
+convolution and add one dimension at a time, until we have the full ML
+convolution.
+
+# Input Channels
+
+First, let's add input channels to the image.
+
+Consider the elements of the image.  Instead of them being real numbers,
+suppose they're vectors in \\( \mathbb{R}^n \\).  For example, maybe your image is
+RGB; in this case, \\( n=3 \\).  Or maybe your image is the result of an intermediate
+layer in a convnet; in this case, maybe \\( n=128 \\).
+
+How do we "multiply" the elements of the image by the filter?  One option is to
+let the elements of the filter also be vectors in \\( \mathbb{R}^n \\).  Now when we
+multiply an element of the input by an element of the filter, we take their dot
+product, giving us a real number.  Then like before, we add up all these dot
+products to get the output element, which is also a real number.
+
+<img src="2023/conv-input-channels.jpg" width=100% alt="One ouptut element is the sum of dot products of img with filter">
+
+As you might have guessed, \\( n \\) is called the number of "input channels".
+It corresponds to dim \\( C\_i \\).
+
+So now we have a function which takes as input two 2D arrays, of size \\(
+(H\_i, W\_i) \\) and \\( (H\_f, W\_f) \\), where each element is a vector in
+\\( \\mathbb{R}^{C\_i} \\).  Or alternatively, we take two 3D arrays of real
+numbers, of dimensions \\( (H\_i, W\_i, C\_i) \\) and \\( (H\_f, W\_f, C\_i)
+\\).
+
+This operation outputs a 2D array of real numbers of size \\( (H\_o, W\_o) \\),
+where the output height/width are a bit smaller than the input.
+
+# Output Channels
+
+Above, our output image is only 2D.  Let's add the \\( C\_o \\) dimension to
+make it 3D.
+
+Suppose we create \\( m \\) independent filters and repeat the process above
+once for each filter.  This results in \\( m \\) 2D output images.
+
+\\( m \\) is, of course, what we call the number of "output channels", \\( C\_o
+\\).  So now the output is a 3D array of dimension \\( (H\_o, W\_o, C\_o) \\).
+The filter gains an additional dimension, \\( (H\_f, W\_f, C\_i, C\_o) \\).
+
+Notice that we take the dot product of each element of the input image, a
+vector in \\( \mathbb{R}^{C\_i} \\), with \\( C_o \\) different vectors from the
+filter.  You can think of this as taking a repeated dot product, or
+alternatively as a matrix-vector multiplication.
+
+<img src="2023/conv-output-channels.jpg" width=100% alt="Vector of output elements is the filter matrix times an img vector">
+
+# Batch Dimension
+
+The only remaining dimension to handle is the "batch" dimension \\( N \\).
+
+To add this, we have \\( N \\) independent input images which generate \\( N
+\\) independent output images.  This is the batch dimension.  Easy enough.  I'm
+not going to attempt to draw it.  :)
+
+Now we have all four dimensions!  That's all an ML convolution is.
+
+# 1x1 Convolutions
+
+Now for our bonus fact.  Suppose the filter's height and width are 1 — i.e. \\(
+H\_i = W\_i = 1 \\).  I claim that this convolution is just a matrix
+multiplication.
+
+To see how, consider that in a (say) 3x3 convolution, each output element is
+the sum of 9 matrix-vector products.  So with a 1x1 convolution, each output
+element is just one matrix-vector product.
+
+But that's exactly the definition of matrix-matrix multiplication!
+
+Concretely, the LHS matrix has dimensions \\( ( N H\_i W\_i, C\_i) \\), and the
+RHS matrix has dims \\( C\_i, C\_o \\).  The resulting matrix has dims \\( ( N
+H\_i W\_i, C\_o ) \\).  In the case of a 1x1 conv the height/width don't
+change, so this is equivalent to \\( ( N H\_o W\_o, C\_o ) \\), as desired. □
