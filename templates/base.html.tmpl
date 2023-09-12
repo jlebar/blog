@@ -4,6 +4,7 @@
 <head>
 <title>{% block title %}{{ title|escape|decode }}{% endblock %}
 </title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 {% block feed %}
 <link rel="alternate" type="application/atom+xml" title="{{ title|escape|decode }} - Feed" href="{{ top_dir }}feed.atom">
 {% endblock %}
