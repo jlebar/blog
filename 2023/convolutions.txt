@@ -31,7 +31,8 @@ arrays of real numbers:
   * the "filter" (also known as the "kernel"), with dimensions
       * \\( H\_f \\) — filter height
       * \\( W\_f \\) — filter width.
-    We expect the filter to be smaller than the image.
+
+We expect the filter to be smaller than the image.
 
 <img src="2023/conv-basic.jpg" width=100% alt="Basic 3x3 convolution">
 
