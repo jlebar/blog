@@ -101,7 +101,10 @@ We can write this in our notation from above as
   (N, H\_o, W\_o, C\_o).
 \\]
 
-This is the operation I want to break down in this post.  We'll take \\(
+Yikes, that's a lot of dimensions.  What do they all mean, and how do they
+interact?
+
+That's what I want to break down in this post.  We'll take \\(
 \operatorname{ConvBasic} \\) and add one dimension at a time, until we have the
 full \\( \operatorname{MLConv} \\) function.
 
@@ -146,8 +149,8 @@ In our notation, this is
 
 # Output Channels
 
-Above, our output image is only 2D.  Let's add the \\( C\_o \\) dimension to
-make it 3D.
+Above, our output image is only 2D.  Let's add the \\( C\_o \\) ("output
+channels") dimension to make it 3D.
 
 Suppose we create \\( C\_o \\) independent filters and repeat the process above
 once for each filter.  This results in \\( C\_o \\) 2D output images.
@@ -179,9 +182,9 @@ The only remaining dimension to handle is the "batch" dimension \\( N \\).
 To add this, we have \\( N \\) independent input images which generate \\( N
 \\) independent output images.  This is the batch dimension.
 
-Now each output element is an \\( C\_o, N \\) matrix, the sum of matrices
-formed by multiplying a \\( C\_o, C\_i \\) filter element by a \\( C\_i, N \\)
-matrix.
+Now each output element is a \\( (C\_o, N) \\) matrix, the sum of matrices
+formed by multiplying a \\( (C\_o, C\_i) \\) filter element by a \\( (C\_i, N)
+\\) matrix.
 
 <img src="2023/conv-full.jpg" width=100% alt="Output NCo matrix is NCi @ CiCo">
 
