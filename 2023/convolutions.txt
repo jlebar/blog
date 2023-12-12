@@ -215,7 +215,7 @@ That's all an ML convolution is!
 # 1x1 Convolutions
 
 Now for our bonus fact.  Suppose the filter's height and width are 1 — i.e. \\(
-H\_i = W\_i = 1 \\).  I claim that this convolution is just a matrix
+H\_f = W\_f = 1 \\).  I claim that this convolution is just a matrix
 multiplication.
 
 First, observe that the batch, image height, and image width dimensions are
@@ -233,5 +233,5 @@ width are 1, then there's only one output element.  And if the filter size is
 computed as a matmul.  Thus, the whole operation is equivalent to a single
 matrix multiply! □
 
-*Thanks to George Karpenkov, Marek Kolodziej, Blake Hechtman, and Kyle Huey for
-their feedback on drafts of this post.*
+*Thanks to George Karpenkov, Marek Kolodziej, Blake Hechtman, Kyle Huey, and
+Alexander Zinoviev for their feedback on drafts of this post.*
