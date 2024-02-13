@@ -1,0 +1,161 @@
+title: Generating Random Floats
+slug: floats
+date: 2023-11-19
+uuid: urn:uuid:93469433-7F67-4B9B-AA75-70960AA595D3
+files:
+
+This post explores three algorithms for generating a rndom floating-point number
+in the range \\( [0,1) \\).
+
+None of this is original, but I haven't seen all of this information collected
+in one place before.
+
+## Background on floating-point
+
+For the purposes of this post, you only need to know the following (some of
+which is not 100% true, but it's close enough for our purposes).
+
+Floating-point numbers are stored using scientific notation, just in base 2.
+For example, instead of
+
+\\[ 3 / 32 = 0.09375 = 9.375 * 10^{-2}, \\]
+
+we'd write
+
+\\[ 3 / 32 = (1.5 * 2) * 2^{-5} = 1.5_10 * 2^{-4} = 1.1_2. \\]
+
+In this case we'd say that the **exponent** is -4 and the **mantissa** (also
+called the **significand**) is the decimal fraction 1.5, which can also be
+written as the binary fraction \\( 1.1_2 \\).
+
+In float32, the exponent is stored using 8 bits and has range
+\\( [-126,127] \\).
+
+We always "normalize" the exponent so the mantissa starts with `1.`.  In
+float32, the mantissa is 23 bits long, not counting the leading 1.  This means
+that for any given exponent, there are \\( 2^23 \\) unique float32s.
+
+We are interested in generating float32s in the range \\( [0,1) \\).  This means
+that the exponent will always be negative.  The largest value in the range is
+\\( 1.11\ldots 1_2 * 2^{-1} \\).
+
+Don't worry if this doesn't make 100% sense.  You can also ask ChatGPT for help.
+:)
+
+## What *is* a random float?
+
+Before we can talk about algorithms for choosing a random float32, we need to
+ask, what does that even mean?  It's kind of a philosophical question.
+
+Here's one possible definition.
+
+1. Choose a random real number \\( r \\) in the range \\( [0,1) \\).  (If this
+   makes you uncomfortable, choose 1000 random digits 0 to 9 to create a number
+   `0.blahblah`.  That's close enough to a random real number for our purposes.)
+
+2. Let our random float `f` be \\( r \\) rounded down to the closest float32
+   value. 
+
+   (Instead of rounding down to get `f`, it might seem more natural to let `f`
+   be the *closest* float value to \\( r \\).  This doesn't make a big
+   difference practically, but rounding down makes the analysis easier.)
+
+TODO: Draw a diagram.
+
+Notice that all floats are not equally likely.  For example, you are twice as
+likely to get a float with exponent -1 as you are to get one with exponent -2.
+
+This is because the difference between two consecutive floats gets smaller as
+the exponent gets smaller.  Essentially, our process for picking a random float
+says that a float `f` "counts" for all the real numbers in \\( [f,
+\mathtt{nextafter}(f)) \\), where `nextafter(f)` is the smallest float greater
+than `f`.
+
+The float `0.0` "counts" for all the real numbers in the range \\[ 0,
+\mathtt{nextafter}(0) ) \approx [0, 2^{-126}) \\].  This means that the
+probability of returning `0.0` should be roughly \\[ 2^{-126} \\].  Thus a
+perfectly fair algorithm that has a chance of returning all floats in \\[ [0,10
+\\], our algorithm needs to take at least 126 bits of entropy.  (To see why,
+realize that our algorithm is deterministic, other than the entropy "argument".
+Write out a table of what it does given each of the `N` possible random values.
+How large does `N` have to be in order for one event to occur with probability
+\\[ 2^{-126} \\]?)
+
+In practice, an event with probability \\[ 2^{-126} \\] effectively never
+happens.  You'd need about [a
+trillion](https://www.wolframalpha.com/input?i=age+of+the+universe+in+nanoseconds+*+%281%2Fns%29+*+2%5E-126)
+computers calculating one random float per nanosecond, running for the lifetime
+of the universe, before having a 50% chance of generating `0.0`.
+
+Thus using 126 bits of entropy just so we have a vanishingly small chance of
+returning 0 and other very small floats is overkill for any application.  You
+can make the argument, depending on your use-case, for an algorithm that accepts
+32 or 64 bits of entropy.  But in this post, I will focus on algorithms that
+take just 32 random bits.
+
+This means that we won't be able to generate all (or even most of) the floats in
+the range `[0,1)` with the correct probability.  We'll have to make compromises,
+either generating fewer floats, or generating all the floats but with the wrong
+probabilities, or some combination of both.
+
+## Approach 1: Divide by `UINT32_MAX`
+
+This approach transforms a 32-bit random integer `n` into a float32 in the range
+\\( [0, 1] \\) as follows.
+
+```c++
+float rng_by_div(uint32_t n) {
+    return static_cast<float>(n) /
+           static_cast<float>(UINT32_MAX);
+}
+```
+
+Simple enough!  Since `n` is a uniform integer in \\( [0, \mathtt{UINT32_MAX}]
+\\), we are essentially just "compresing" it into the range \\( [0, 1] \\),
+wherein it should also be uniform.
+
+Note that this algorithm gives us a number in the closed interval \\( [0,1] \\)
+rather than the half-open interval \\( [0,1) \\).  That may or may not be
+desirable for your use-case.  If you don't want to return `1.0`, you could
+either reroll (i.e. generate a new random number), or you could return some
+other number instead (probably `0.999...`).
+
+Because this algorithm only uses 32 bits of entropy, we know it makes
+compromises -- it cannot generate all floats in the range with the "correct"
+probabilities.  Let's figure out how it behaves.
+
+The first thing to realize is, `static_cast<float>(UINT32_MAX)` equals
+`static_cast<float>(2**32 - 1)` equals `static_cast<float>(2**32)`.  This is
+because `float` only has 23 bits of mantissa precision, and `2**32 - 1` differs
+from `2**32` in the 32nd bit.
+
+This is helpful to our analysis, because dividing a float `f` by `2**32` is
+equivalent to subtracting 32 from `f`'s exponent and leaving `f`'s mantissa
+unchanged.  So the function `rng_by_div(n)` is equivalent to:
+
+* Convert `n` to a float with exponent `e` and mantissa `m`.
+* Return the float with exponent `e - 32` and mantissa `m`.
+
+
+
+Unfortunately this algorithm has poor "resolution".
+
+To see the problem, 
+
+To see what I mean, suppose `n = 1.23 * 2^25` (remember, n is an integer).  We
+convert this to a float.
+
+First, consider the divisor, `static_cast<float>(UINT32_MAX - 1)`.  This rounds
+to the nearest float (technically I think it depends on your program's rounding
+mode, but round-to-nearest is the default in every platform I've used), which is
+`2^32`.  So `fn1` is equivalent to `return static_cast<float>(n) /
+float(2^32)`.
+
+Dividing a float by `2^k` is easy.  Recall that a float is represented as `1.m
+* 2^e`.  So if we divide by 2^k, we simply subtract the exponents to get `1.m *
+* 2^(e-k)`.  Thus the algorithm is equivalent to:
+
+1. Convert `n` to a float.
+2. Decrease the float's exponent by 32.
+
+The problem is that `n` loses 
