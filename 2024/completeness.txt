@@ -57,7 +57,7 @@ hardware-incomplete IRs have many benefits, including:
  * Incomplete languages usually have restrictions that make it easier to do
    completer optimizations.
 
- * It's easier to make incomplete langauges portable to different hardware,
+ * It's easier to make incomplete languages portable to different hardware,
    because you're not aiming to generate *any* valid program on the target
    hardware.  (For example, LLVM IR is not actually portable; you can't take
    LLVM IR generated for x86 and expect to run it on a GPU.)
@@ -139,4 +139,4 @@ diagrams".  Behold.
 In all of these cases, the narrow part of the hourglass is an incomplete
 language, so it has all the problems I've described above.
 
-*Thanks to Kyle Huey for feedback on drafts of this post.*
+*Thanks to Kyle Huey and Mehdi Amini for feedback on drafts of this post.*
