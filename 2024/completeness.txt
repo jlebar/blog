@@ -24,7 +24,7 @@ Some examples of hardware-complete languages are:
    implemented in hardware).
 
 Of course, you can't always get 100% of the performance of handwritten machine
-code out of, say, a C program -- at leaest, not without replacing your whole
+code out of, say, a C program—at least, not without replacing your whole
 program with a giant block of inline asm (although I'd argue the fact that you
 *can* do that is part of what makes C hardware-complete).  But philosophically,
 hardware-complete languages try to make it possible to get close to "100%
