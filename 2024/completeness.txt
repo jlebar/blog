@@ -55,7 +55,7 @@ hardware-incomplete IRs have many benefits, including:
    languages than a complete/general-purpose language.
 
  * Incomplete languages usually have restrictions that make it easier to do
-   completer optimizations.
+   compiler optimizations.
 
  * It's easier to make incomplete languages portable to different hardware,
    because you're not aiming to generate *any* valid program on the target
