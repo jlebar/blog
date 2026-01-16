@@ -5,9 +5,11 @@ uuid: urn:uuid:4A22B420-C65A-445C-AD6D-ECC398CA3CD1
 
 This post explains what linear layouts are and why they're cool.
 
-There is a [paper](https://arxiv.org/abs/2505.23819) if you prefer, but I want
-to use this post to explain the concept more informally, and to build intuition
-for why you'd want them in the first place.
+There is a [paper](https://arxiv.org/abs/2505.23819) if you prefer, and also two
+[blog](https://www.lei.chat/posts/triton-linear-layout-concept/)
+[posts](https://www.lei.chat/posts/triton-linear-layout-examples/), by Lei Zhang
+from AMD.  I want to use this post to explain the concept more informally, and
+to build intuition for why you'd want them in the first place.
 
 The initial idea behind linear layouts is due to Adam Goucher; I was just one of
 the people who worked on the implementation in Triton.
