@@ -1,0 +1,293 @@
+title: Linear Layouts Explained Intuitively
+slug: linear-layouts
+date: 2026-01-15
+uuid: urn:uuid:4A22B420-C65A-445C-AD6D-ECC398CA3CD1
+
+This post explains what linear layouts are and why they're cool.
+
+There is a [paper](https://arxiv.org/abs/2505.23819) if you prefer, but I want
+to use this forum to explain the concept more informally, and to build intuition
+for why you'd want them in the first place.
+
+The initial idea behind linear layouts is due to Adam Gaucher; I was just one of
+the people who worked on the implementation in Triton.
+
+## What is a layout?
+
+Let's start with the definition of a *layout*.
+
+In ML languages like JAX and Triton, users write their code in terms of
+*tensors*, which are just multi-dimensional arrays of numbers.  For example,
+you might have a 2D matrix composed of rows and columns; or a 4D image with
+dimensions batch, height, width, and channels.
+
+Although the user thinks of their tensor as an N-dimensional array, at some
+point the elements probably need to be stored in memory.  Memory is usually
+thought of as a one-dimensional array, so to store the tensor, we somehow need
+to flatten an N-dimensional index (e.g. the tuple `(row, column)`) into a
+one-dimensional index.
+
+Informally, a function that maps an N-dimensional index of to a 1D index is
+called a *layout*.  (We'll refine this definition later.)  For example, two
+common layouts for a 2D array are row-major and column-major.
+
+GPUs can become very slow if your reads and writes don't use "good" memory
+access patterns.  Therefore the choice of layout is often critical to
+performance.
+
+In principle, if you have a tensor with \\( n \\) elements, there are \\( n! \\)
+possible layouts.  But in practice we don't want our layouts to be arbitrary
+functions, that would be madness.  Just storing an arbitrary layout for a tensor
+with 1B elements would require us to store 1B indices!
+
+So the trick is coming up with a class of layout functions that are
+
+ - powerful enough to be useful, and
+ - constrained enough to be practical.
+
+Linear layouts are one such class of functions.  As we'll see, they're
+particularly useful for GPUs.
+
+Before I show you what linear layouts are, I want to motivate the design.  And
+to do that, I need to define what "useful" is.  Let's go through some examples
+of layouts we want to be able to represent.
+
+## Examples of "useful" layouts
+
+### Layout #1: Permutation of the input dimensions
+
+The simplest layout is probably a permutation of the dimensions of the tensor.
+
+For example, a 2D array of size \\( R \\times C \\) can be stored in row-major
+or column-major order.  We can write these as functions as follows.
+
+\\[
+\\begin{align}
+  \\operatorname{RowMaj}(r, c) &= r + R * c \\\\
+  \\operatorname{ColMaj}(r, c) &= c + C * r
+\\end{align}
+\\]
+
+If we want to represent a layout of this form, we just need to write down a
+permutation of the input dimensions.  Then we flatten them into a 1D index using
+that ordering (e.g. "rows then columns" or "columns then rows").
+
+### Layout #2: Reorder the input bits
+
+Permuting the dimensions covers 90% of interesting layouts; XLA:GPU got away
+with this for a long time.  But eventually you'll probably want to represent a
+"tiled layout".
+
+For example, nvidia's cuDNN has the
+[`CUDNN_TENSOR_NCHW_VECT_C`](https://docs.nvidia.com/deeplearning/cudnn/backend/latest/api/cudnn-graph-library.html#cudnntensorformat-t)
+layout for 4D image tensors with dimensions batch (N), channel (C), height (H), width (W).
+
+Here's one way to understand this layout. Assume the dimensions of the tensor
+are all powers of 2.  Given an input index \\( (n, c, h, w) \\), construct a 1D
+output index by concatenating bits from the input indices as follows (starting
+with the high-order bits):
+
+ - All the bits of \\(n \\).
+ - All but the two least-significant bits of \\( c \\).
+ - All the bits of \\( h \\).
+ - All the bits of \\( w \\).
+ - The two least-significant bits of \\( c \\).
+
+You can see this is kind of a compromise between `NCHW` (i.e. `N` is most major,
+`W` is most minor) and `NHWC` (i.e. `C` is most minor); we've effectively split
+the `C` dimension into two sub-dimensions.  Splitting up a dimension like this
+is what we mean by "tiling". In the case of `VECT_C`, tiling lets us write more
+efficient kernels for tensors that have small elements, such as `int8`.
+
+We can generalize this into a layout that allows us to reorder the bits of the
+input index arbitrarily:
+
+ - Concatenate all the input dimensions into a single bitstring `b`.
+ - Reorder the bits of `b` according to a permutation `P`.
+ - Return this value as the layout's 1D index.
+
+To represent such a layout, we only need to write down the permutation `P`,
+which is small (log of the number of elements in the tensor).
+
+You can see that this kind of layout subsumes the case where we permute the
+dimensions, plus we can now represent tiled layouts.  Great!  We did lose the
+ability to represent non-power-of-2 dimension sizes, but we'll come back to that
+later.
+
+Notice that with this scheme, having multiple input dimensions doesn't give us
+any additional power; we just concatenate them into a single index `b`.
+Multiple input dimensions are still useful to the user, but it's a nice property
+that we can specify the same effective layout no matter how the user decides to
+split up their logical dimensions.
+
+Indeed, another way of thinking of this is that it's the same as the earlier
+case where we permute the dimensions, except we reshape the input so that all
+dimensions have size 2.  Then we have \\(\log n\\) input indices, and our
+permutation `P` specifies how to permute them to get the output index.
+
+### Layout #3: Swizzling
+
+The next problem you might run into has to do with avoiding shared memory bank
+conflicts.
+
+nvidia GPUs have a special memory space called "shared memory".  For our
+purposes, the important thing about it is that it has 32 "banks".  In one cycle,
+you can read one element from each bank.  But if you try to read `n` elements
+from the same bank, that's called a "bank conflict", and it takes takes `n`
+cycles.  It's therefore important to arrange your data so that your reads and
+writes avoid bank conflicts.
+
+Suppose we want to store a 32x32 matrix in shared memory, and suppose the
+accesses we want to support are:
+
+ 1. Read all the elements of one row.
+ 2. Read all the elements of one column.
+
+Suppose we naively were to store the matrix in shared memory in row-major order.
+I claim this will have lots of bank conflicts.  Let's see why.
+
+Our naive layout function is:
+
+\\[
+  \\operatorname{ShmemRowMaj}(r, c) = (\\operatorname{row}=r, \\operatorname{bank}=c)
+\\]
+
+Now we analyze the memory access patterns to check for bank conflicts.
+
+ - When we read one row \\( r \\), we read elements \\( (r, 0), (r, 1), \ldots
+  (r, 31) \\).  These are in banks \\( 0, 1, \ldots, 31 \\).  Great, no bank
+  conflicts!
+
+ - But now suppose we try to read one column \\( c \\).  We read elements \\(
+  (0, c), (1, c), \ldots, (31, c) \\).  These are all in the same bank, namely
+  \\( c \\).  So that's bad.
+
+OK, so row-major doesn't work.  You can convince yourself that column-major has
+the same problem.  Here's a layout that *does* work.
+
+\\[
+    \operatorname{ShmemSwizzled}(r, c) = (\operatorname{row}=r, \operatorname{bank}=r \oplus c)
+\\]
+
+where \\(\oplus\\) represents bitwise xor.
+
+Let's check that this avoids bank conflicts for our desired memory access pattern.
+
+ - When we read one row \\( r \\), we read elements \\( (r, r \oplus 0), (r, r
+   \oplus 1), \ldots, (r, r \oplus 31) \\).  The banks are \\( r \oplus 0, r
+   \oplus 1, \ldots, r \oplus 31 \\).  To see that there are no duplicates,
+   observe that we could write the list as \\( r \oplus (0, 1, \ldots, 31) \\).
+   Xor is an invertible operation, so because the elements \\( 0, 1, \ldots, 31
+   \\) are all different, the elements are all different after xor'ing with \\(
+   r \\).
+
+ - When we read one column \\( c \\), we read elements \\( (0, 0 \oplus c), (1, 1
+   \oplus c), \ldots, (31, 31 \oplus c) \\).  The banks accessed can be written
+   as \\( (0, 1, \ldots 31) \oplus c \\), and by the same argument as above, all
+   of these are different.
+
+This might seem like a weird way to achieve our goal of avoiding bank conflicts
+on row/col accesses, and there are in fact other more intuitive ways to
+accomplish the same thing.  But one nice property of this approach is that it's
+very fast to compute, and in the end we don't really care about the specific way
+we assign elements to banks so long as we avoid bank conflicts.
+
+As we did before, we can generalize this to allow arbitrary swizzling, as follows.
+
+ - Concatenate all the input dimensions into a single bitstring \\( b \\).
+ - For each output bit \\( o\_i \\), the layout specifies a bitmask \\( m\_i \\)
+   of the same length as \\(b\\).
+ - For each \\(i\\), compute \\( v\_i = b \otimes m\_i \\), where
+   \\(\\otimes\\) is bitwise and.
+ - Let the output bit \\(o\_i\\) be all the bits of \\( v\_i \\) xor'ed together.
+   (Equivalently, let \\(o\_i\\) be 1 if \\( v\_i \\) has an odd number of 1s.)
+
+Our shared memory example above can be written in this form.  For the first
+dimension of the output, our mask simply selects the i'th bit of the input `r`.
+For the second dimension of the output, our mask selects the i'th bit of the
+input `r` and the i'th bit of the input `c`.
+
+Critically, this scheme can also represent the layouts that nvidia GPUs use for
+tensor core operations.
+
+We can specify such a layout by writing down the bitmasks \\( m\_i \\).  This is
+tractable because the number and size of the bitmasks is logarithmic in the
+number of elements in the tensor.
+
+You can check that scheme this subsumes the previous one where we simply reorder
+the bits of the input index.  In this case each \\(m\_i\\) has a single 1 bit,
+corresponding to the input bit that goes to output bit \\(i\\).
+
+A layout specified by a list of masks \\(m\_i\\) in this way is what we call a
+*linear layout*.
+
+What's cool about this is that we can represent a bunch of different layout
+transformations using the same machinery.  Transposes, reshapes, tiling, and
+multiple generations of nvidia and AMD tensor core layouts are all just special
+cases of linear layouts.  Moreover as we'll see, we can *combine* any of these
+transformations.  This is much nicer than having special-purpose code for e.g.
+swizzled layouts vs tensor-core layouts.
+
+But the rule for applying a linear layout might seem kind of magic.  Where does
+it come from, and what's "linear" about it?  Let's look at that next.
+
+## A Mathematical Perspective to Linear Layouts
+
+Recall that given a layout's masks \\(m\_i\\) and an input index \\(b\\) (formed
+by concatenating all of the input dimensions), the i'th bit of the output index
+\\(o\_i\\) is computed as follows.
+
+\\[
+  o\_i = \\bigoplus_{j} (m\_i \\otimes b)\_j
+\\]
+
+where \\(\oplus\\) is bitwise xor, and \\(\otimes\\) is bitwise and.  The "sum"
+is over the bits of \\(m\_i \otimes b\\).  (I'm abusing notation here; the
+subscript \\(j\\) is a bit index, whereas the subscript \\(i\\) in \\(m\_i\\)
+refers to the i'th bitmask.)
+
+If you've done linear algebra, maybe you're onto me at this point.  With the
+notation I've chosen, this looks a lot like the dot product of the vectors
+\\(m\_i\\) and \\(b\\)!  And indeed we can think of it that way.
+
+First we need to define the field we're working on.  Let \\(\mathbb{F}\_2\\) be
+the field with two elements, 0 and 1.  Let addition on this field be `xor`, and
+multiplication be `and`.
+
+Now we can interpret \\(b\\), \\(m\_i\\), and \\(o\_i\\) as vectors in
+\\(\mathbb{F}\_2^n\\).  Then indeed \\(o\_i = m\_i \cdot b\\).
+
+Moreover we notice that we're doing repeated dot products here, so that's really
+a matrix-vector multiplication!  We can concatenate the \\(m\_i\\) column
+vectors into a matrix \\(M\\) and then say that \\(o = M b\\).
+
+In other words, a linear layout function is just a linear transformation over
+the field \\(\mathbb{F}\_2^n\\)!  That's where "linear" in "linear layout" comes
+from.
+
+What's cool about this is that we can now do math on our layouts.  For example:
+
+ - Want to invert a layout?  Just invert the matrix \\(M\\)!  (Note that as
+   specified so far, a valid layout's matrix must be invertible, because each
+   input index maps to exactly one output index, and vice versa.)
+ - Want to compose two layouts?  Just multiply their matrices!
+ - Suppose we have an input tensor with layout \\(L\_1\\) and an output tensor
+   with layout \\(L\_2\\).  We can use shared memory to shuffle the input into
+   the output.  But what layout should we use for the shared memory to avoid
+   bank conflicts, while still allowing us to read from the input and write to
+   the output efficiently?  We can now write an algorithm to find this!  It's
+   described in the paper under the heading "optimal swizzling".
+
+The values in the matrix \\(M\\) also have a natural interpretation.  If you
+have an input with value \\( 2^i \\) (i.e. a bitstring with a single 1 in the
+i'th position), then the output value is simply the i'th column of \\(M\\).  So
+specifying a layout's matrix is equivalent to specifying how it operates on
+power-of-two inputs.
+
+If your input index has 1 bits at indices i and j and 0s elsewhere, then the
+output index is found by xoring the values of the i'th and j'th columns of
+\\(M\\).  And similarly if the input index has more 1s.  That's just another way
+of stating how matrix multiplication works in \\(\mathbb{F}\_2\\).
+
+## Extensions to Linear Layouts
+
