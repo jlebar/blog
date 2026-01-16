@@ -3,7 +3,7 @@
 #
 
 all:
-	weblog/weblog_run.py publish
+	uv run --with markdown2,jinja2 weblog/weblog_run.py publish
 	find output -type d -print0 | xargs -0 chmod 755
 	find output -type f -print0 | xargs -0 chmod 644
 
