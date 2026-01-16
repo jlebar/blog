@@ -65,8 +65,8 @@ or column-major order.  We can write these as functions as follows.
 
 \\[
 \\begin{align}
-  \\operatorname{RowMaj}(r, c) &= C * r + c \\\\
-  \\operatorname{ColMaj}(r, c) &= R * c + r
+  \\operatorname{RowMaj}(r, c) &= C \times r + c \\\\
+  \\operatorname{ColMaj}(r, c) &= R \times c + r
 \\end{align}
 \\]
 
@@ -133,9 +133,9 @@ A downside of this scheme as compared to the first one is, we lost the ability
 to represent non-power-of-2 dimension sizes.  We also lost the ability to
 represent layouts for tensors where we don't know the size of the dimensions
 ahead of time (sometimes called "dynamic shapes").  In practice we can usually
-handle this by choosing a fixed-sized "tile".  We can then represent the tensor
-as a dynamically-sized array of tiles and use linear layouts to represent the
-contents of one tile.
+handle this by choosing a fixed-sized "block".  We can then represent the tensor
+as a dynamically-sized array of blocks and use linear layouts to represent the
+contents of one block.
 
 ### Layout #3: Swizzling
 
