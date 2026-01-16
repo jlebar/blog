@@ -9,7 +9,7 @@ There is a [paper](https://arxiv.org/abs/2505.23819) if you prefer, but I want
 to use this post to explain the concept more informally, and to build intuition
 for why you'd want them in the first place.
 
-The initial idea behind linear layouts is due to Adam Gaucher; I was just one of
+The initial idea behind linear layouts is due to Adam Goucher; I was just one of
 the people who worked on the implementation in Triton.
 
 ## What is a layout?
@@ -27,9 +27,9 @@ thought of as a one-dimensional array, so to store the tensor, we somehow need
 to flatten an N-dimensional index (e.g. the tuple `(row, column)`) into a
 one-dimensional index.
 
-Informally, a function that maps an N-dimensional index of to a 1D index is
-called a *layout*.  For example, two common layouts for a 2D array are row-major
-and column-major.
+Informally, a function that maps an N-dimensional index to a 1D index is called
+a *layout*.  For example, two common layouts for a 2D array are row-major and
+column-major.
 
 GPUs can become very slow if your reads and writes don't use "good" memory
 access patterns.  Therefore the choice of layout is often critical to
@@ -63,8 +63,8 @@ or column-major order.  We can write these as functions as follows.
 
 \\[
 \\begin{align}
-  \\operatorname{RowMaj}(r, c) &= r + R * c \\\\
-  \\operatorname{ColMaj}(r, c) &= c + C * r
+  \\operatorname{RowMaj}(r, c) &= C * r + c \\\\
+  \\operatorname{ColMaj}(r, c) &= R * c + r
 \\end{align}
 \\]
 
@@ -112,6 +112,10 @@ which is small (log of the number of elements in the tensor).
 You can see that this kind of layout subsumes the case where we permute the
 dimensions, plus we can now represent tiled layouts.  Great!
 
+(If you like linear algebra, notice that "reordering bits" is just multiplying
+\\(b\\) by a permutation matrix over \\(\mathbb{F}\_2\\), so this is a linear
+transformation.)
+
 Notice that with this scheme, having multiple input dimensions doesn't give us
 any additional power; we just concatenate them into a single index `b`.
 Multiple input dimensions are still useful to the user, but it's a nice property
@@ -139,9 +143,9 @@ conflicts.
 nvidia GPUs have a special memory space called "shared memory".  For our
 purposes, the important thing about it is that it has 32 "banks".  In one cycle,
 you can read one element from each bank.  But if you try to read `n` elements
-from the same bank, that's called a "bank conflict", and it takes takes `n`
-cycles.  It's therefore important to arrange your data so that your reads and
-writes avoid bank conflicts.
+from the same bank, that's called a "bank conflict", and it takes `n` cycles.
+It's therefore important to arrange your data so that your reads and writes
+avoid bank conflicts.
 
 Suppose we want to store a 32x32 matrix in shared memory, and suppose the
 accesses we want to support are:
@@ -157,6 +161,10 @@ Our naive layout function is:
 \\[
   \\operatorname{ShmemRowMaj}(r, c) = (\\operatorname{row}=r, \\operatorname{bank}=c)
 \\]
+
+(Up until now our output indices were a single number.  Here it's conceptually
+cleaner to split it into two numbers, but we can always combine them back into a
+single number as \\( 32 \times \operatorname{row} + \operatorname{bank} \\).)
 
 Now we analyze the memory access patterns to check for bank conflicts.
 
@@ -201,26 +209,23 @@ we assign elements to banks so long as we avoid bank conflicts.
 As we did before, we can generalize this to allow arbitrary swizzling, as follows.
 
  - Concatenate all the input dimensions into a single bitstring \\( b \\).
- - For each output bit \\( o\_i \\), the layout specifies a bitmask \\( m\_i \\)
-   of the same length as \\(b\\).
- - For each \\(i\\), compute \\( v\_i = b \otimes m\_i \\), where
-   \\(\\otimes\\) is bitwise and.
- - Let the output bit \\(o\_i\\) be all the bits of \\( v\_i \\) xor'ed together.
-   (Equivalently, let \\(o\_i\\) be 1 if \\( v\_i \\) has an odd number of 1s.)
+ - The i-th output bit \\(o\_i\\) is the parity (i.e. xor-sum) of a subset of the
+   bits of \\(b\\).  Specifically, the layout defines a bitmask \\(m\_i\\) which
+   indicates which bits of \\(b\\) to select.
 
 Our shared memory example above can be written in this form.  For the first
-dimension of the output, our mask simply selects the i'th bit of the input `r`.
-For the second dimension of the output, our mask selects the i'th bit of the
-input `r` and the i'th bit of the input `c`.
+dimension of the output, our mask simply selects the i-th bit of the input `r`.
+For the second dimension of the output, our mask selects the i-th bit of the
+input `r` and the i-th bit of the input `c`.
 
 Critically, this scheme can also represent the layouts that nvidia GPUs use for
 tensor core operations.
 
 We can specify such a layout by writing down the bitmasks \\( m\_i \\).  This is
-tractable because the number and size of the bitmasks is logarithmic in the
+tractable because the number and size of the bitmasks are logarithmic in the
 number of elements in the tensor.
 
-You can check that scheme this subsumes the previous one where we simply reorder
+You can check that this scheme subsumes the previous one where we simply reorder
 the bits of the input index.  In this case each \\(m\_i\\) has a single 1 bit,
 corresponding to the input bit that goes to output bit \\(i\\).
 
@@ -237,10 +242,10 @@ swizzled layouts vs tensor-core layouts.
 But the rule for applying a linear layout might seem kind of magic.  Where does
 it come from, and what's "linear" about it?  Let's look at that next.
 
-## A Mathematical Perspective to Linear Layouts
+## A Mathematical Perspective on Linear Layouts
 
 Recall that given a layout's masks \\(m\_i\\) and an input index \\(b\\) (formed
-by concatenating all of the input dimensions), the i'th bit of the output index
+by concatenating all of the input dimensions), the i-th bit of the output index
 \\(o\_i\\) is computed as follows.
 
 \\[
@@ -250,7 +255,7 @@ by concatenating all of the input dimensions), the i'th bit of the output index
 where \\(\oplus\\) is bitwise xor, and \\(\otimes\\) is bitwise and.  The "sum"
 is over the bits of \\(m\_i \otimes b\\).  (I'm abusing notation here; the
 subscript \\(j\\) is a bit index, whereas the subscript \\(i\\) in \\(m\_i\\)
-refers to the i'th bitmask.)
+refers to the i-th bitmask.)
 
 If you've done linear algebra, maybe you're onto me at this point.  With the
 notation I've chosen, this looks a lot like the dot product of the vectors
@@ -260,16 +265,57 @@ First we need to define the field we're working on.  Let \\(\mathbb{F}\_2\\) be
 the field with two elements, 0 and 1.  Let addition on this field be `xor`, and
 multiplication be `and`.
 
-Now we can interpret \\(b\\), \\(m\_i\\), and \\(o\_i\\) as vectors in
+Now we can interpret \\(b\\), \\(m\_i\\), and \\(o\\) as vectors in
 \\(\mathbb{F}\_2^n\\).  Then indeed \\(o\_i = m\_i \cdot b\\).
 
 Moreover we notice that we're doing repeated dot products here, so that's really
-a matrix-vector multiplication!  We can concatenate the \\(m\_i\\) column
-vectors into a matrix \\(M\\) and then say that \\(o = M b\\).
+a matrix-vector multiplication!  We can stack the \\(m\_i\\) vectors as the rows
+of a matrix \\(M\\) and then say that \\(o = M b\\).
 
 In other words, a linear layout function is just a linear transformation over
 the field \\(\mathbb{F}\_2^n\\)!  That's where "linear" in "linear layout" comes
 from.
+
+As a worked example, suppose our input index is a 3-bit vector \\( b = (b\_2,
+b\_1, b\_0) \\).
+
+Define a layout with three output bits using masks
+
+\\[
+m\_0 = (1, 0, 1), \qquad
+m\_1 = (0, 1, 1), \qquad
+m\_2 = (1, 1, 1).
+\\]
+
+Then the output bits are
+
+\\[
+o\_0 = b\_2 \oplus b\_0, \qquad
+o\_1 = b\_1 \oplus b\_0, \qquad
+o\_2 = b\_2 \oplus b\_1 \oplus b\_0.
+\\]
+
+In matrix form, this is
+
+\\[
+\\begin{pmatrix}
+o\_0 \\\\
+o\_1 \\\\
+o\_2
+\\end{pmatrix} =
+\\begin{pmatrix}
+1 & 0 & 1 \\\\
+0 & 1 & 1 \\\\
+1 & 1 & 1
+\\end{pmatrix}
+\\begin{pmatrix}
+b\_2 \\\\
+b\_1 \\\\
+b\_0
+\\end{pmatrix},
+\\]
+
+where all arithmetic is over \\(\mathbb{F}\_2\\).
 
 What's cool about this is that we can now do math on our layouts.  For example:
 
@@ -284,12 +330,12 @@ What's cool about this is that we can now do math on our layouts.  For example:
 
 The values in the matrix \\(M\\) also have a natural interpretation.  If you
 have an input with value \\( 2^i \\) (i.e. a bitstring with a single 1 in the
-i'th position), then the output value is simply the i'th column of \\(M\\).  So
+i-th position), then the output value is simply the i-th column of \\(M\\).  So
 specifying a layout's matrix is equivalent to specifying how it operates on
 power-of-two inputs.
 
 If your input index has 1 bits at indices i and j and 0s elsewhere, then the
-output index is found by xoring the values of the i'th and j'th columns of
+output index is found by xoring the values of the i-th and j-th columns of
 \\(M\\).  And similarly if the input index has more 1s.  That's just another way
 of stating how matrix multiplication works in \\(\mathbb{F}\_2\\).
 
@@ -302,5 +348,15 @@ One of the things that I love about linear layouts is, we don't need to do this.
 You can write a concise and precise description of a layout as a matrix, and
 then I can translate that directly into code.  Done.
 
+One final note if you read the paper.  In this post I've defined a layout as a
+map from input indices to output indices.  The paper actually defines it the
+other way around, from outputs (e.g. memory locations) to inputs.  This allows
+us to represent layouts where the same element appears multiple times, in
+different memory locations.  If we disallow duplicates, then the formulations
+are effectively equivalent, just invert the matrix \\(M\\) to go between the
+two.  (If there are duplicates, \\(M\\) is not invertible.)
+
 There's more to say, but I think I'll stop here.  This should give you intuition
 if you want to read the paper or work with linear layouts inside Triton!
+
+Thanks to ChatGPT 5.2 Pro for feedback on drafts of this post.
