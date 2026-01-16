@@ -44,7 +44,7 @@ performance.
 In principle, if you have a tensor with \\( n \\) elements, there are \\( n! \\)
 possible layouts.  But in practice we don't want our layouts to be arbitrary
 functions.  Just writing down an arbitrary layout for a tensor with 1B elements
-would require at minimum \\( log\_2(10^9!) \\) bits, approximately 3.6GB!  So
+would require at minimum \\( \log\_2(10^9!) \\) bits, approximately 3.6GB!  So
 the layout would be roughly as big as the tensor itself.
 
 So the trick is coming up with a class of layout functions that are
