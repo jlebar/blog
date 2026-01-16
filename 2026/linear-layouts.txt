@@ -354,9 +354,9 @@ other way around, from outputs (e.g. memory locations) to inputs.  This allows
 us to represent layouts where the same element appears multiple times, in
 different memory locations.  If we disallow duplicates, then the formulations
 are effectively equivalent, just invert the matrix \\(M\\) to go between the
-two.  (If there are duplicates, \\(M\\) is not invertible.)
+two.  (\\(M\\) is invertible if and only if there are no duplicates.)
 
 There's more to say, but I think I'll stop here.  This should give you intuition
 if you want to read the paper or work with linear layouts inside Triton!
 
-Thanks to ChatGPT 5.2 Pro for feedback on drafts of this post.
+*Thanks to ChatGPT 5.2 Pro for feedback on drafts of this post.*
