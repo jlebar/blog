@@ -1,4 +1,4 @@
-title: Linear Layouts Explained Intuitively
+title: Linear Layouts From First Principles
 slug: linear-layouts
 date: 2026-01-15
 uuid: urn:uuid:4A22B420-C65A-445C-AD6D-ECC398CA3CD1
@@ -6,7 +6,7 @@ uuid: urn:uuid:4A22B420-C65A-445C-AD6D-ECC398CA3CD1
 This post explains what linear layouts are and why they're cool.
 
 There is a [paper](https://arxiv.org/abs/2505.23819) if you prefer, but I want
-to use this forum to explain the concept more informally, and to build intuition
+to use this post to explain the concept more informally, and to build intuition
 for why you'd want them in the first place.
 
 The initial idea behind linear layouts is due to Adam Gaucher; I was just one of
@@ -28,8 +28,8 @@ to flatten an N-dimensional index (e.g. the tuple `(row, column)`) into a
 one-dimensional index.
 
 Informally, a function that maps an N-dimensional index of to a 1D index is
-called a *layout*.  (We'll refine this definition later.)  For example, two
-common layouts for a 2D array are row-major and column-major.
+called a *layout*.  For example, two common layouts for a 2D array are row-major
+and column-major.
 
 GPUs can become very slow if your reads and writes don't use "good" memory
 access patterns.  Therefore the choice of layout is often critical to
@@ -37,8 +37,8 @@ performance.
 
 In principle, if you have a tensor with \\( n \\) elements, there are \\( n! \\)
 possible layouts.  But in practice we don't want our layouts to be arbitrary
-functions, that would be madness.  Just storing an arbitrary layout for a tensor
-with 1B elements would require us to store 1B indices!
+functions, that would be madness.  Just writing down an arbitrary layout for a
+tensor with 1B elements would require us to specify 1B indices!
 
 So the trick is coming up with a class of layout functions that are
 
@@ -110,9 +110,7 @@ To represent such a layout, we only need to write down the permutation `P`,
 which is small (log of the number of elements in the tensor).
 
 You can see that this kind of layout subsumes the case where we permute the
-dimensions, plus we can now represent tiled layouts.  Great!  We did lose the
-ability to represent non-power-of-2 dimension sizes, but we'll come back to that
-later.
+dimensions, plus we can now represent tiled layouts.  Great!
 
 Notice that with this scheme, having multiple input dimensions doesn't give us
 any additional power; we just concatenate them into a single index `b`.
@@ -124,6 +122,14 @@ Indeed, another way of thinking of this is that it's the same as the earlier
 case where we permute the dimensions, except we reshape the input so that all
 dimensions have size 2.  Then we have \\(\log n\\) input indices, and our
 permutation `P` specifies how to permute them to get the output index.
+
+A downside of this scheme as compared to the first one is, we lost the ability
+to represent non-power-of-2 dimension sizes.  We also lost the ability to
+represent layouts for tensors where we don't know the size of the dimensions
+ahead of time (sometimes called "dynamic shapes").  In practice we can usually
+handle this by choosing a fixed-sized "tile".  We can then represent the tensor
+as a dynamically-sized array of tiles and use linear layouts to represent the
+contents of one tile.
 
 ### Layout #3: Swizzling
 
@@ -267,9 +273,7 @@ from.
 
 What's cool about this is that we can now do math on our layouts.  For example:
 
- - Want to invert a layout?  Just invert the matrix \\(M\\)!  (Note that as
-   specified so far, a valid layout's matrix must be invertible, because each
-   input index maps to exactly one output index, and vice versa.)
+ - Want to invert a layout?  Just invert the matrix \\(M\\)!
  - Want to compose two layouts?  Just multiply their matrices!
  - Suppose we have an input tensor with layout \\(L\_1\\) and an output tensor
    with layout \\(L\_2\\).  We can use shared memory to shuffle the input into
@@ -289,5 +293,14 @@ output index is found by xoring the values of the i'th and j'th columns of
 \\(M\\).  And similarly if the input index has more 1s.  That's just another way
 of stating how matrix multiplication works in \\(\mathbb{F}\_2\\).
 
-## Extensions to Linear Layouts
+## Conclusion
 
+When people talk about layouts, there are usually lots of diagrams.  I like
+diagrams in general, but I almost always find layout diagrams [hard to
+understand](https://docs.nvidia.com/cuda/parallel-thread-execution/#async-warpgroup-smem-layout-128b-k-tf32).
+One of the things that I love about linear layouts is, we don't need to do this.
+You can write a concise and precise description of a layout as a matrix, and
+then I can translate that directly into code.  Done.
+
+There's more to say, but I think I'll stop here.  This should give you intuition
+if you want to read the paper or work with linear layouts inside Triton!
