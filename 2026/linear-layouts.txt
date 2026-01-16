@@ -205,8 +205,7 @@ Let's check that this avoids bank conflicts for our desired memory access patter
 This might seem like a weird way to achieve our goal of avoiding bank conflicts
 on row/col accesses, and there are in fact other more intuitive ways to
 accomplish the same thing.  But one nice property of this approach is that it's
-very fast to compute, and in the end we don't really care about the specific way
-we assign elements to banks so long as we avoid bank conflicts.
+very fast to compute.
 
 As we did before, we can generalize this to allow arbitrary swizzling, as follows.
 
