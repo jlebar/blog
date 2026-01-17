@@ -325,14 +325,30 @@ where all arithmetic is over \\(\mathbb{F}\_2\\).
 A reasonable question you might have is, is *any* matrix a valid linear layout?
 And it's easy to see, no.  For example, the zero matrix would map every input
 index to memory location 0, but it doesn't make sense to have multiple elements
-stored in the same memory location.  Therefore we require our matrix to be
-surjective, i.e. to map each input to a different output.
+stored in the same memory location.  Therefore we require our transformation to
+be surjective, i.e. to map each input to a different output.
 
 We don't necessarily need to require injectivity, i.e. we *can* allow some
 memory locations to have no corresponding input index.  This would be a form of
 padding.  But we already require padding the input size to be a power of two;
 usually we don't need *more* padding than that, so we usually require
 injectivity.
+
+Another question you might have is, what if I want the same tensor element to be
+stored in two different memory locations (i.e. we want a broadcasting layout)?
+As defined so far, we can't do this; it would require us to turn our
+transformation into a multivalued function, which in turn would prevent us from
+representing it as a linear transformation.
+
+But what we can do is swap the input and output of our layout function.  Instead
+of mapping from input indices to memory locations, we can map from memory
+locations to input indices.  Each memory location maps to one input index, but
+multiple memory locations can map to the same input index.  This is actually how
+the paper defines linear layouts.  I just didn't do it this way in this writeup
+because it's unintuitive to think of going in this direction.  If we don't have
+broadcasting, the two representations are equivalent; you just invert the matrix
+to go between them.  (The matrix is invertible if and only if there is no
+broadcasting.)
 
 What's cool about this is that we can now do math on our layouts.  For example:
 
@@ -360,17 +376,9 @@ One of the things that I love about linear layouts is, we don't need to do this.
 You can write a concise and precise description of a layout as a matrix, and
 then I can translate that directly into code.  Done.
 
-One final note if you do further reading.  In this post I've defined a layout as
-a map from logical indices to memory locations.  The paper actually defines it
-the other way around, from memory locations to logical indices.  This allows us
-to represent layouts where the same element appears multiple times in different
-memory locations.  If we disallow duplication, then the formulations are
-effectively equivalent, just invert the matrix \\(M\\) to go between the two.
-(\\(M\\) is invertible if and only if there are no duplicates.)
-
 There's more to say, but I think I'll stop here.  This should give you intuition
 if you want to read the paper or work with linear layouts inside Triton!
 
 *Thanks to [Michael
-Kuperstein](https://www.linkedin.com/in/michael-kuperstein-78ab621) and ChatGPT
-5.2 Pro for feedback on drafts of this post.*
+Kuperstein](https://www.linkedin.com/in/michael-kuperstein-78ab621), Sanjoy Das,
+and ChatGPT 5.2 Pro for feedback on drafts of this post.*
