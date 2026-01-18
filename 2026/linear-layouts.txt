@@ -380,5 +380,6 @@ There's more to say, but I think I'll stop here.  This should give you intuition
 if you want to read the paper or work with linear layouts inside Triton!
 
 *Thanks to [Michael
-Kuperstein](https://www.linkedin.com/in/michael-kuperstein-78ab621), Sanjoy Das,
-and ChatGPT 5.2 Pro for feedback on drafts of this post.*
+Kuperstein](https://www.linkedin.com/in/michael-kuperstein-78ab621), [Sanjoy
+Das](https://sanjoy.link), and ChatGPT 5.2 Pro for feedback on drafts of this
+post.*
