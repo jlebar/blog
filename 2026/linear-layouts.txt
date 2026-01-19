@@ -326,13 +326,13 @@ A reasonable question you might have is, is *any* matrix a valid linear layout?
 And it's easy to see, no.  For example, the zero matrix would map every input
 index to memory location 0, but it doesn't make sense to have multiple elements
 stored in the same memory location.  Therefore we require our transformation to
-be surjective, i.e. to map each input to a different output.
+be injective, i.e. to map each input to a different output.
 
-We don't necessarily need to require injectivity, i.e. we *can* allow some
+We don't necessarily need to require surjectivity, i.e. we *can* allow some
 memory locations to have no corresponding input index.  This would be a form of
 padding.  But we already require padding the input size to be a power of two;
 usually we don't need *more* padding than that, so we usually require
-injectivity.
+surjectivity.
 
 Another question you might have is, what if I want the same tensor element to be
 stored in two different memory locations (i.e. we want a broadcasting layout)?
@@ -381,5 +381,6 @@ if you want to read the paper or work with linear layouts inside Triton!
 
 *Thanks to [Michael
 Kuperstein](https://www.linkedin.com/in/michael-kuperstein-78ab621), [Sanjoy
-Das](https://sanjoy.link), and ChatGPT 5.2 Pro for feedback on drafts of this
-post.*
+Das](https://sanjoy.link), [Haggai
+Nuchi](https://www.linkedin.com/in/haggai-nuchi-311771302), and ChatGPT 5.2 Pro
+for feedback on drafts of this post.*
