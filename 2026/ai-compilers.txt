@@ -3,12 +3,11 @@ slug: ai-compilers
 date: 2026-05-04
 uuid: urn:uuid:05D656A2-08E6-41FB-ADA0-DA64B225CE19
 
-In Feb 2026, Anthropic
-[vibe-coded](https://www.anthropic.com/engineering/building-c-compiler) a C
-compiler.  My read is that this was less about using AI to build a compiler per
-se, and more about probing the limits of using AI to build a complex project.
-But it got me thinking.  What *would* it look like to go all-in on
-AI-for-compilers?
+In Feb 2026, Anthropic used a team of agents to
+[build](https://www.anthropic.com/engineering/building-c-compiler) a C compiler.
+My read is that this was less about using AI to build a compiler per se, and
+more about probing the limits of using AI to build a complex project.  But it
+got me thinking.  What *would* it look like to go all-in on AI-for-compilers?
 
 In this essay I explore some visions of that.
 
@@ -22,7 +21,9 @@ Here are some forms that I can imagine an "AI compiler" taking.
 2. Replacing heuristics within a "normal compiler".  For example, a compiler
    could ask an LLM to decide whether to inline a particular function call.  Or
    the LLM could decide, after inspecting the IR, which compiler passes to run.
-
+   (Examples of prior art: [MLGO](https://llvm.org/docs/MLGO.html) and
+   [Magellan](https://arxiv.org/abs/2601.21096).)
+   
 3. "Direct program synthesis", where the LLM takes your program as input and
    outputs a new program (potentially in assembly code) that does the same
    thing.  This is basically using the LLM as a translator, from one language
@@ -49,8 +50,8 @@ I'm particularly excited by tool-assisted program synthesis.  It seems to me
 that most of the work of compiling code is pretty mechanical and can be handled
 just fine by regular code; using an LLM to do all the work of compilation feels
 like a waste of GPUs, at least given the cost of tokens today.  But having the
-LLM look at your IR during compilation and tweak it, either manually or by
-choosing to run one or more passes, that could be pretty useful.
+LLM look at your IR during compilation and tweak it -- either directly or by
+choosing to run one or more passes -- could be useful.
 
 Indeed, the LLM could even close the optimization loop: It could notice that the
 existing "regular compiler" could be tweaked to generate better code (e.g. by
@@ -63,14 +64,14 @@ I imagine you're thinking at this point, "Vibe-coding is cool, but mostly this
 sounds like a way to introduce bugs into my program."  Indeed, human-written
 compilers have bugs, but at least then you can be mad at someone.
 
-Here are some options we have to check for correctness.
+Here are some options for checking for correctness.
 
 1. Trust the LLM.  I think this is plausible, actually.  Consider that OpenAI
-and Google achieved gold-level scores on the IMO in July 2025 (10 months ago!)
-*without using formal methods*.  If we can trust an LLM to write code and do
-math, why can't we trust it to modify our code as part of compilation?  And if
-LLMs aren't good enough today, who's to say they won't be real soon now?  I say
-don't sleep on this one.
+and Google achieved gold-level scores on the IMO in July 2025 *without using
+formal methods*.  If we can trust an LLM to write code and do math, why can't we
+trust it to modify our code as part of compilation?  And if LLMs aren't good
+enough today, who's to say they won't be Real Soon Now?  I say don't sleep on
+this one.
 
 2. Write lots of tests.  I think this is less plausible, especially in the modes
 where the LLM is making bespoke changes to the compiled artifact.  If we have to
@@ -79,16 +80,16 @@ be very hard to catch the kinds of "weird" bugs that a buggy compiler can
 create.  Rare race conditions are especially dangerous.  Sanitizers can help
 somewhat, but I don't think they solve the problem.
 
-3. Use formal verification.  Broadly speaking, formal verification has been
-impractical because writing proofs is hard.  But if you have a superhuman AI
+3. Use formal verification.  Broadly speaking, formal verification hasn't been
+widely adopted because writing proofs is hard.  But if you have a superhuman AI
 coding assistant writing your compiler, maybe that changes things.  (And indeed
 we know that LLMs are increasingly good at writing at least some kinds of Lean
-proofs!)  The AI could provide proofs about the correctness of the compiler it's
-written, or, if it's modifying your code in a bespoke manner, it could provide a
-proof that the new program is semantically identical to the old one.
+proofs!)  The AI could provide proof a proof of correctness for the compiler
+it's written, or, if it's modifying your code in a bespoke manner, it could
+provide a proof that the new program preserves the semantics of the old one.
 
 I'm particularly interested in exploring formal methods.  Compilers are
-particularly well-suited to formal methods because compilers have a simple
+particularly well-suited to formal methods because compilers have a clear
 correctness invariant: Stated informally, don't change the semantics of the
 input.  Everything else is optimization.
 
