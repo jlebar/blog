@@ -16,7 +16,7 @@ In this essay I explore some visions of that.
 Here are some forms that I can imagine an "AI compiler" taking.
 
 1. A vibe-coded "normal compiler".  It's basically the same as compilers exist
-   today, except an AI wrote most or all of it.  This is what Anthropic built.
+   today, except an AI wrote most or all of it.  This is what Anthropic did.
 
 2. Replacing heuristics within a "normal compiler".  For example, a compiler
    could ask an LLM to decide whether to inline a particular function call.  Or
@@ -70,23 +70,21 @@ Here are some options for checking for correctness.
 and Google achieved gold-level scores on the IMO in July 2025 *without using
 formal methods*.  If we can trust an LLM to write code and do math, why can't we
 trust it to modify our code as part of compilation?  And if LLMs aren't good
-enough today, who's to say they won't be Real Soon Now?  I say don't sleep on
-this one.
+enough today, who's to say they won't be Real Soon Now?
 
 2. Write lots of tests.  I think this is less plausible, especially in the modes
 where the LLM is making bespoke changes to the compiled artifact.  If we have to
 test the individual compiled artifact (rather than the compiler itself), it can
 be very hard to catch the kinds of "weird" bugs that a buggy compiler can
-create.  Rare race conditions are especially dangerous.  Sanitizers can help
-somewhat, but I don't think they solve the problem.
+create.  Sanitizers can help somewhat, but I don't think they solve the problem.
 
 3. Use formal verification.  Broadly speaking, formal verification hasn't been
 widely adopted because writing proofs is hard.  But if you have a superhuman AI
-coding assistant writing your compiler, maybe that changes things.  (And indeed
-we know that LLMs are increasingly good at writing at least some kinds of Lean
-proofs!)  The AI could provide proof a proof of correctness for the compiler
-it's written, or, if it's modifying your code in a bespoke manner, it could
-provide a proof that the new program preserves the semantics of the old one.
+coding assistant writing your compiler, maybe that changes things?  The AI could
+provide proof a proof of correctness for the compiler it's written, or, if it's
+modifying your code in a bespoke manner, it could provide a proof that the new
+program preserves the semantics of the old one.  (Examples of prior art:
+[CompCert](https://compcert.org/), [vellvm](https://github.com/vellvm/vellvm).)
 
 I'm particularly interested in exploring formal methods.  Compilers are
 particularly well-suited to formal methods because compilers have a clear
@@ -94,11 +92,12 @@ correctness invariant: Stated informally, don't change the semantics of the
 input.  Everything else is optimization.
 
 I've been playing with this for the past few days.  Seems like a lot of work,
-but vaguely feasible?  As of writing, I think I have a proof that my
-dominator-tree algorithm terminates.  Not sure I've proven it's correct, though.
-😂
+but vaguely feasible for the AI to prove nontrivial theorems about the compiler?
+As of writing, I think I have a proof that my dominator-tree algorithm
+terminates.  Not sure I've proven it's correct, though.  😂
 
 You should probably not look at [my code](https://github.com/jlebar/vir) for
 inspiration, I don't know what I'm doing in Lean.
+[vellvm](https://github.com/vellvm/vellvm) is a more realistic example.
 
 *Thanks to ChatGPT 5.5 Pro for feedback on a draft of this post.*
