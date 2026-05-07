@@ -20,8 +20,9 @@ Here are some forms that I can imagine an "AI compiler" taking.
 
 2. Replacing heuristics within a "normal compiler".  For example, a compiler
    could ask an LLM to decide whether to inline a particular function call.  Or
-   the LLM could decide, after inspecting the IR, which compiler passes to run.
-   (Examples of prior art: [MLGO](https://llvm.org/docs/MLGO.html) and
+   the compiler could ask the LLM to decide which compiler passes to run (after
+   the LLM e.g. inspected the IR).  (Examples of prior art:
+   [MLGO](https://llvm.org/docs/MLGO.html) and
    [Magellan](https://arxiv.org/abs/2601.21096).)
    
 3. "Direct program synthesis", where the LLM takes your program as input and
@@ -39,7 +40,7 @@ Here are some forms that I can imagine an "AI compiler" taking.
    the compiler is "in charge" and decides when to invoke the LLM, whereas in
    this one, the LLM is in charge and decides when to invoke parts of the
    "regular compiler".
-   
+
 5. "Clippy mode", in which the LLM looks at your code and perhaps at the
    compiled artifact and suggests changes to the source code to make it better
    (e.g. faster, or more correct).  This is different from the other modes in
@@ -53,10 +54,11 @@ like a waste of GPUs, at least given the cost of tokens today.  But having the
 LLM look at your IR during compilation and tweak it -- either directly or by
 choosing to run one or more passes -- could be useful.
 
-Indeed, the LLM could even close the optimization loop: It could notice that the
+Indeed, the LLM could close the optimization loop: It could notice that the
 existing "regular compiler" could be tweaked to generate better code (e.g. by
-modifying a heuristic or adding a new pass).  At this point it looks a lot like
-an "automated compiler engineer"!
+modifying a heuristic or adding a new pass).  And of course you can put this in
+a loop, where at each step it benchmarks the new code.  At this point it looks a
+lot like an "automated compiler engineer"!
 
 ## Checking Our Work
 
