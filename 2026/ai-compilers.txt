@@ -102,4 +102,6 @@ You should probably not look at [my code](https://github.com/jlebar/vir) for
 inspiration, I don't know what I'm doing in Lean.
 [vellvm](https://github.com/vellvm/vellvm) is a more realistic example.
 
-*Thanks to ChatGPT 5.5 Pro for feedback on a draft of this post.*
+*Thanks to Kyle Huey, [Haggai
+Nuchi](https://www.linkedin.com/in/haggai-nuchi-311771302), and ChatGPT 5.5 Pro
+for feedback on drafts of this post.*
