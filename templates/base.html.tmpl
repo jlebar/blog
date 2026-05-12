@@ -11,6 +11,26 @@
 <meta http-equiv="Content-Type" content="text/html;charset=US-ASCII">
 <meta name='generator' content='weblog'>
 <link rel="icon" type="image/png" href="{{ top_dir }}favicon.png" />
+<script type="text/javascript">
+(function() {
+  var name = 'jlebar-theme';
+  var mode = 'auto';
+  var cookies = document.cookie ? document.cookie.split('; ') : [];
+  for (var i = 0; i < cookies.length; i++) {
+    var parts = cookies[i].split('=');
+    if (parts[0] === name) {
+      mode = decodeURIComponent(parts.slice(1).join('='));
+      break;
+    }
+  }
+  if (mode !== 'light' && mode !== 'dark' && mode !== 'auto') {
+    mode = 'auto';
+  }
+  document.documentElement.className =
+    document.documentElement.className.replace(/\btheme-(light|dark|auto)\b/g, '').replace(/^\s+|\s+$/g, '');
+  document.documentElement.className += (document.documentElement.className ? ' ' : '') + 'theme-' + mode;
+})();
+</script>
 {% block head %}
 <link href="{{ top_dir }}style.css" rel="stylesheet" type="text/css">
 {% endblock %}
@@ -31,12 +51,20 @@
 
 <div id="menu">
 <p>
-  <a href='{{ top_dir }}index.html'>Latest posts</a><br>
-  <a href='{{ top_dir }}archives.html'>Archives</a><br>
+  <a href='{{ top_dir }}archives.html'>Archives</a>
   <a href='{{ top_dir }}feed.atom'>
     <img class="inline-feed-icon" src="{{ top_dir }}feed-icon.png">
       Feed
   </a>
+  <span id="theme-picker">
+    <input id="theme-light" type="radio" name="theme" value="light">
+    <label for="theme-light">Light</label>
+    <input id="theme-dark" type="radio" name="theme" value="dark">
+    <label for="theme-dark">Dark</label>
+    <input id="theme-auto" type="radio" name="theme" value="auto">
+    <label for="theme-auto">Auto</label>
+  </span>
+</p>
 </div>
 <div id="search">
 </div>
@@ -57,6 +85,59 @@ Published using <a href='http://henry.precheur.org/weblog/'>Weblog</a>
 </p>
 </div>
 {% endblock %}
+<script type="text/javascript">
+(function() {
+  var cookieName = 'jlebar-theme';
+  var modes = { auto: true, light: true, dark: true };
+  var mediaQuery = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+
+  function savedMode() {
+    var cookies = document.cookie ? document.cookie.split('; ') : [];
+    for (var i = 0; i < cookies.length; i++) {
+      var parts = cookies[i].split('=');
+      if (parts[0] === cookieName) {
+        var mode = decodeURIComponent(parts.slice(1).join('='));
+        return modes[mode] ? mode : 'auto';
+      }
+    }
+    return 'auto';
+  }
+
+  function setMode(mode) {
+    if (!modes[mode]) {
+      mode = 'auto';
+    }
+    document.cookie = cookieName + '=' + encodeURIComponent(mode) +
+      '; Max-Age=31536000; Path=/; SameSite=Lax';
+    document.documentElement.className =
+      document.documentElement.className.replace(/\btheme-(light|dark|auto)\b/g, '').replace(/^\s+|\s+$/g, '');
+    document.documentElement.className += (document.documentElement.className ? ' ' : '') + 'theme-' + mode;
+    var inputs = document.getElementsByName('theme');
+    for (var i = 0; i < inputs.length; i++) {
+      inputs[i].checked = inputs[i].value === mode;
+    }
+  }
+
+  function refreshAutoMode() {
+    if (savedMode() === 'auto') {
+      setMode('auto');
+    }
+  }
+
+  setMode(savedMode());
+  var inputs = document.getElementsByName('theme');
+  for (var i = 0; i < inputs.length; i++) {
+    inputs[i].onclick = function() { setMode(this.value); };
+  }
+  if (mediaQuery) {
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', refreshAutoMode);
+    } else if (mediaQuery.addListener) {
+      mediaQuery.addListener(refreshAutoMode);
+    }
+  }
+})();
+</script>
 </body>
 </html>
 {# vim:set ft=htmljinja: #}
